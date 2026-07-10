@@ -3,57 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · AI Agent v2.0</title>
+  <title>旅行规划师 · AI Agent v3.0</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif}
     body{background:linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);min-height:100vh;display:flex;justify-content:center;padding:20px}
     .container{width:100%;max-width:800px;display:flex;flex-direction:column;gap:20px}
-
     .header{text-align:center;padding:30px 0 10px}
     .header h1{color:#fff;font-size:28px;font-weight:700}
     .header p{color:#a0a0b8;font-size:14px;margin-top:6px}
     .header .emoji{font-size:40px;display:block;margin-bottom:8px}
-
     .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
     .card-title{color:#e0e0e0;font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .form-group{display:flex;flex-direction:column;gap:6px}
     .form-group.full{grid-column:1/-1}
     .form-group label{color:#b0b0c0;font-size:13px;font-weight:500}
-    .form-group select,.form-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:all 0.2s}
-    .form-group select:focus,.form-group input:focus{border-color:#4a9eff;background:rgba(255,255,255,0.1)}
+    .form-group input,.form-group select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:all 0.2s}
+    .form-group input:focus,.form-group select:focus{border-color:#4a9eff;background:rgba(255,255,255,0.1)}
     .form-group select option{background:#1a1a2e;color:#fff}
-
-    .people-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .people-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px}
-    .people-item label{color:#b0b0c0;font-size:13px;min-width:40px}
-    .people-item input{width:60px;padding:6px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;text-align:center}
-    .people-item input:focus{border-color:#4a9eff}
-
     .pref-tags{display:flex;flex-wrap:wrap;gap:8px}
     .pref-tag{padding:8px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:#b0b0c0;font-size:13px;cursor:pointer;transition:all 0.2s;user-select:none}
     .pref-tag:hover{border-color:#4a9eff;color:#fff}
     .pref-tag.selected{background:#4a9eff;border-color:#4a9eff;color:#fff}
-
-    .vehicle-tags{display:flex;flex-wrap:wrap;gap:8px}
-    .vehicle-tag{padding:8px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:#b0b0c0;font-size:13px;cursor:pointer;transition:all 0.2s;user-select:none}
-    .vehicle-tag:hover{border-color:#6c5ce7;color:#fff}
-    .vehicle-tag.selected{background:#6c5ce7;border-color:#6c5ce7;color:#fff}
-
+    .people-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .people-row input{width:60px;text-align:center}
+    .people-row span{color:#b0b0c0;font-size:13px}
     .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg, #4a9eff, #6c5ce7);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s}
-    .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px rgba(74,158,255,0.3)}
-    .btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(74,158,255,0.3)}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
     .btn-secondary{width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);border-radius:12px;color:#e0e0e0;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-top:10px}
     .btn-secondary:hover{background:rgba(255,255,255,0.12)}
-
     .loading{display:none;text-align:center;padding:40px}
     .loading.active{display:block}
     .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
     @keyframes spin{to{transform:rotate(360deg)}}
     .loading-text{color:#a0a0b8;font-size:14px}
-
     .result{display:none}
     .result.active{display:block}
     .result-content{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px;color:#e0e0e0;line-height:1.8;font-size:14px}
@@ -66,401 +52,185 @@
     .result-content table{width:100%;border-collapse:collapse;margin:12px 0}
     .result-content th,.result-content td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}
     .result-content th{background:rgba(74,158,255,0.2);color:#4a9eff}
-
-    .date-picker{display:flex;gap:10px;align-items:center}
-    .date-picker input{flex:1}
-    .date-picker span{color:#a0a0b8;font-size:13px}
-
-    @media(max-width:600px){
-      .form-grid{grid-template-columns:1fr}
-      .people-grid{grid-template-columns:1fr 1fr}
-      .header h1{font-size:22px}
-    }
+    .tips{color:#888;font-size:12px;text-align:center;margin-top:8px}
+    .tips a{color:#4a9eff;text-decoration:none}
+    .date-row{display:flex;gap:10px;align-items:center}
+    .date-row input{flex:1}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}.header h1{font-size:22px}}
   </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <span class="emoji">🧳</span>
-    <h1>旅行规划师 v2.0</h1>
-    <p>AI 智能规划 · 支持车次推荐 · PDF 下载</p>
+    <h1>旅行规划师 v3.0</h1>
+    <p>AI 智能规划 · 城际交通 · 市内接驳 · PDF 下载</p>
   </div>
 
-  <!-- 输入表单 -->
   <div class="card">
     <div class="card-title">📋 填写旅行信息</div>
     <div class="form-grid">
       <!-- 始发地 -->
-      <div class="form-group">
-        <label>🏠 始发地</label>
-        <select id="origin">
-          <option value="">请选择出发城市</option>
-        </select>
-      </div>
+      <div class="form-group"><label>🏠 始发地</label><select id="from"><option value="">请选择</option><option value="北京">北京</option><option value="上海">上海</option><option value="广州">广州</option><option value="深圳">深圳</option><option value="杭州">杭州</option><option value="成都">成都</option><option value="重庆">重庆</option><option value="武汉">武汉</option><option value="南京">南京</option><option value="西安">西安</option><option value="长沙">长沙</option><option value="厦门">厦门</option><option value="青岛">青岛</option><option value="昆明">昆明</option><option value="三亚">三亚</option></select></div>
       <!-- 目的地 -->
-      <div class="form-group">
-        <label>🌍 目的地</label>
-        <select id="destination">
-          <option value="">请选择目的地</option>
-        </select>
-      </div>
-      <!-- 预算档位 -->
-      <div class="form-group">
-        <label>💰 预算范围</label>
-        <select id="budget">
-          <option value="">请选择预算</option>
-          <option value="0-2000">2千以下</option>
-          <option value="2000-5000">2千-5千</option>
-          <option value="5000-10000">5千-1万</option>
-          <option value="10000-20000">1万-2万</option>
-          <option value="20000-50000">2万-5万</option>
-          <option value="50000+">5万以上</option>
-        </select>
-      </div>
-      <!-- 日期范围 -->
-      <div class="form-group">
-        <label>📅 出发日期</label>
-        <input type="date" id="startDate">
-      </div>
-      <div class="form-group">
-        <label>📅 返程日期</label>
-        <input type="date" id="endDate">
-      </div>
-      <div class="form-group">
-        <label>📊 旅行天数（自动计算）</label>
-        <input type="text" id="daysDisplay" readonly placeholder="请选择日期范围" style="opacity:0.7">
-      </div>
-      <!-- 交通工具 -->
-      <div class="form-group full">
-        <label>🚗 交通工具偏好（可多选）</label>
-        <div class="vehicle-tags" id="vehicleTags">
-          <span class="vehicle-tag" data-val="飞机">✈️ 飞机</span>
-          <span class="vehicle-tag" data-val="高铁">🚄 高铁</span>
-          <span class="vehicle-tag" data-val="火车">🚂 火车</span>
-          <span class="vehicle-tag" data-val="自驾">🚗 自驾</span>
-          <span class="vehicle-tag" data-val="大巴">🚌 大巴</span>
-          <span class="vehicle-tag" data-val="邮轮">🚢 邮轮</span>
-        </div>
-      </div>
-      <!-- 人数细化 -->
-      <div class="form-group full">
-        <label>👥 出行人员</label>
-        <div class="people-grid">
-          <div class="people-item">
-            <label>🧑 成人</label>
-            <input type="number" id="adults" value="1" min="0" max="20">
-          </div>
-          <div class="people-item">
-            <label>👶 儿童(3-12岁)</label>
-            <input type="number" id="children" value="0" min="0" max="10">
-          </div>
-          <div class="people-item">
-            <label>👴 老人(60岁以上)</label>
-            <input type="number" id="elders" value="0" min="0" max="10">
-          </div>
-          <div class="people-item">
-            <label>🍼 婴儿(0-3岁)</label>
-            <input type="number" id="infants" value="0" min="0" max="5">
-          </div>
-        </div>
-      </div>
-      <!-- 旅行偏好 -->
-      <div class="form-group full">
-        <label>🎯 旅行偏好（可多选）</label>
-        <div class="pref-tags" id="prefTags">
-          <span class="pref-tag" data-val="美食">🍜 美食</span>
-          <span class="pref-tag" data-val="拍照">📸 拍照</span>
-          <span class="pref-tag" data-val="购物">🛍️ 购物</span>
-          <span class="pref-tag" data-val="自然风光">🏔️ 自然风光</span>
-          <span class="pref-tag" data-val="历史文化">🏛️ 历史文化</span>
-          <span class="pref-tag" data-val="冒险">🧗 冒险</span>
-          <span class="pref-tag" data-val="放松度假">🏖️ 放松度假</span>
-          <span class="pref-tag" data-val="亲子">👶 亲子</span>
-          <span class="pref-tag" data-val="蜜月">💑 蜜月</span>
-          <span class="pref-tag" data-val="商务">💼 商务</span>
-        </div>
-      </div>
+      <div class="form-group"><label>🌍 目的地</label><select id="destination"><option value="">请选择</option><option value="北京">北京</option><option value="上海">上海</option><option value="广州">广州</option><option value="深圳">深圳</option><option value="杭州">杭州</option><option value="成都">成都</option><option value="重庆">重庆</option><option value="武汉">武汉</option><option value="南京">南京</option><option value="西安">西安</option><option value="长沙">长沙</option><option value="厦门">厦门</option><option value="青岛">青岛</option><option value="昆明">昆明</option><option value="三亚">三亚</option><option value="东京">东京</option><option value="巴黎">巴黎</option><option value="曼谷">曼谷</option></select></div>
+      <!-- 预算 -->
+      <div class="form-group"><label>💰 预算范围</label><select id="budget"><option value="">请选择</option><option value="2000以下">2000以下</option><option value="2000-5000">2000-5000元</option><option value="5000-10000">5000-10000元</option><option value="10000-20000">10000-20000元</option><option value="20000以上">20000以上</option></select></div>
+      <!-- 天数 -->
+      <div class="form-group"><label>📅 出发日期</label><div class="date-row"><input type="date" id="startDate"><span>→</span><input type="date" id="endDate"></div><span style="color:#888;font-size:11px;margin-top:4px" id="dayCount">选择日期后自动计算天数</span></div>
+      <!-- 人数 -->
+      <div class="form-group full"><label>👥 出行人员</label><div class="people-row"><span>🧑 成人</span><input type="number" id="adults" value="1" min="0" max="10"><span>👶 小孩</span><input type="number" id="children" value="0" min="0" max="10"><span>👴 老人</span><input type="number" id="elders" value="0" min="0" max="10"></div></div>
+      <!-- 偏好 -->
+      <div class="form-group full"><label>🎯 旅行偏好（可多选）</label><div class="pref-tags" id="prefTags"><span class="pref-tag" data-val="美食">🍜 美食</span><span class="pref-tag" data-val="拍照">📸 拍照</span><span class="pref-tag" data-val="购物">🛍️ 购物</span><span class="pref-tag" data-val="自然风光">🏔️ 自然风光</span><span class="pref-tag" data-val="历史文化">🏛️ 历史文化</span><span class="pref-tag" data-val="冒险">🧗 冒险</span><span class="pref-tag" data-val="放松度假">🏖️ 放松度假</span><span class="pref-tag" data-val="亲子">👶 亲子</span></div></div>
     </div>
     <button class="btn-primary" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
   </div>
 
-  <!-- 加载动画 -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <div class="loading-text">AI 正在为你规划旅行方案……</div>
-    <p style="color:#666;font-size:12px;margin-top:6px">预计需要 10-20 秒</p>
-  </div>
+  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在为你规划旅行方案……</div><p style="color:#666;font-size:12px;margin-top:6px">预计需要 10-20 秒</p></div>
 
-  <!-- 结果区域 -->
   <div class="result" id="result">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="justify-content:space-between">
-        <span>📝 你的旅行方案</span>
-        <span style="font-size:12px;color:#888" id="resultMeta"></span>
-      </div>
+      <div class="card-title" style="justify-content:space-between"><span>📝 你的旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
       <div class="result-content" id="resultContent"></div>
       <button class="btn-secondary" onclick="downloadPDF()">📄 下载 PDF</button>
       <button class="btn-secondary" onclick="window.location.reload()">🔄 重新规划</button>
     </div>
   </div>
 
-  <p style="color:#888;font-size:12px;text-align:center;margin-top:8px">
-    💡 AI 生成内容仅供参考，出行前请核实信息。
-  </p>
+  <p class="tips">💡 AI 生成内容仅供参考，出行前请核实信息。<br>如有问题，欢迎到 <a href="https://51ai-1.pages.dev" target="_blank">温柔陪伴</a> 反馈。</p>
 </div>
 
 <script>
-// ==================== 模块1：中国城市列表 ====================
-const CHINA_CITIES = [
-  '北京','上海','广州','深圳','成都','重庆','杭州','武汉','西安','南京',
-  '长沙','天津','苏州','郑州','青岛','大连','厦门','昆明','三亚','哈尔滨',
-  '长春','沈阳','济南','合肥','南昌','福州','贵阳','南宁','海口','兰州',
-  '西宁','银川','乌鲁木齐','拉萨','呼和浩特','石家庄','太原','无锡','宁波',
-  '温州','珠海','佛山','东莞','中山','桂林','丽江','大理','张家界','黄山',
-  '九寨沟','布达拉宫','呼伦贝尔','喀纳斯','稻城亚丁','香格里拉'
-];
+// ==================== 标签选择 ====================
+document.querySelectorAll('.pref-tag').forEach(tag => {
+  tag.addEventListener('click', function(){ this.classList.toggle('selected'); });
+});
 
-// 初始化城市下拉框
-(function initCitySelects(){
-  const originSelect = document.getElementById('origin');
-  const destSelect = document.getElementById('destination');
-  
-  CHINA_CITIES.forEach(city => {
-    const opt1 = document.createElement('option');
-    opt1.value = city;
-    opt1.textContent = city;
-    originSelect.appendChild(opt1);
-    
-    const opt2 = document.createElement('option');
-    opt2.value = city;
-    opt2.textContent = city;
-    destSelect.appendChild(opt2);
-  });
-})();
-
-// ==================== 模块2：偏好标签选择 ====================
-(function initTags(){
-  document.querySelectorAll('.pref-tag, .vehicle-tag').forEach(tag => {
-    tag.addEventListener('click', function(){
-      this.classList.toggle('selected');
-    });
-  });
-})();
-
-// ==================== 模块3：日期联动计算 ====================
-(function initDatePickers(){
-  const startDate = document.getElementById('startDate');
-  const endDate = document.getElementById('endDate');
-  const daysDisplay = document.getElementById('daysDisplay');
-  
+// ==================== 日期联动 ====================
+(function(){
+  const start = document.getElementById('startDate');
+  const end = document.getElementById('endDate');
+  const dayCount = document.getElementById('dayCount');
   function updateDays(){
-    if(startDate.value && endDate.value){
-      const start = new Date(startDate.value);
-      const end = new Date(endDate.value);
-      const diffTime = end.getTime() - start.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if(diffDays > 0){
-        daysDisplay.value = diffDays + '天';
-      } else {
-        daysDisplay.value = '日期范围不正确';
-        endDate.value = '';
-      }
+    if(start.value && end.value){
+      const s = new Date(start.value), e = new Date(end.value);
+      const diff = Math.ceil((e.getTime() - s.getTime()) / 86400000);
+      if(diff > 0) dayCount.textContent = '共 ' + diff + ' 天';
+      else { dayCount.textContent = '日期范围不正确'; end.value = ''; }
     }
   }
-  
-  startDate.addEventListener('change', updateDays);
-  endDate.addEventListener('change', updateDays);
+  start.addEventListener('change', updateDays);
+  end.addEventListener('change', updateDays);
 })();
 
-// ==================== 模块4：输入验证 ====================
+// ==================== 验证 ====================
 function validateForm(){
-  const origin = document.getElementById('origin').value;
-  const destination = document.getElementById('destination').value;
+  const from = document.getElementById('from').value;
+  const dest = document.getElementById('destination').value;
   const budget = document.getElementById('budget').value;
-  const daysDisplay = document.getElementById('daysDisplay').value;
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
   const adults = parseInt(document.getElementById('adults').value) || 0;
-  const children = parseInt(document.getElementById('children').value) || 0;
-  const elders = parseInt(document.getElementById('elders').value) || 0;
-  const infants = parseInt(document.getElementById('infants').value) || 0;
-  
-  // 基本信息验证
-  if(!origin) return '请选择始发地';
-  if(!destination) return '请选择目的地';
-  if(origin === destination) return '始发地和目的地不能相同';
+  const total = adults + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0);
+  if(!from || !dest) return '请选择始发地和目的地';
+  if(from === dest) return '始发地和目的地不能相同';
   if(!budget) return '请选择预算范围';
-  if(!daysDisplay || daysDisplay === '日期范围不正确') return '请选择正确的日期范围';
-  
-  // 人数验证
-  const totalPeople = adults + children + elders + infants;
-  if(totalPeople === 0) return '请至少添加1位出行人员';
-  if(totalPeople > 30) return '出行人数不能超过30人';
-  
-  // 日期验证
-  const startDate = new Date(document.getElementById('startDate').value);
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  if(startDate < today) return '出发日期不能是过去';
-  
-  // 预算和天数合理性
-  const days = parseInt(daysDisplay);
-  if(days > 30) return '旅行天数不能超过30天';
-  if(days < 1) return '旅行天数至少1天';
-  
-  return null; // 验证通过
+  if(!start || !end) return '请选择出发和返程日期';
+  if(new Date(start) < new Date(new Date().toDateString())) return '出发日期不能是过去';
+  if(total === 0) return '请至少添加1位出行人员';
+  return null;
 }
 
-// ==================== 模块5：构建选项ID列表（安全） ====================
-function getSelectedOptions(){
-  // 只收集选项的ID，不直接拼接提示词
-  const vehicles = [];
-  document.querySelectorAll('.vehicle-tag.selected').forEach(tag => vehicles.push(tag.dataset.val));
-  
-  const preferences = [];
-  document.querySelectorAll('.pref-tag.selected').forEach(tag => preferences.push(tag.dataset.val));
-  
+// ==================== 获取选项 ====================
+function getOptions(){
+  const prefs = []; document.querySelectorAll('.pref-tag.selected').forEach(t => prefs.push(t.dataset.val));
   return {
-    origin: document.getElementById('origin').value,
+    from: document.getElementById('from').value,
     destination: document.getElementById('destination').value,
     budget: document.getElementById('budget').value,
-    days: parseInt(document.getElementById('daysDisplay').value),
+    days: parseInt(document.getElementById('dayCount').textContent) || 0,
     startDate: document.getElementById('startDate').value,
     endDate: document.getElementById('endDate').value,
     people: {
       adults: parseInt(document.getElementById('adults').value) || 0,
       children: parseInt(document.getElementById('children').value) || 0,
       elders: parseInt(document.getElementById('elders').value) || 0,
-      infants: parseInt(document.getElementById('infants').value) || 0,
-      total: (parseInt(document.getElementById('adults').value)||0) + 
-             (parseInt(document.getElementById('children').value)||0) + 
-             (parseInt(document.getElementById('elders').value)||0) + 
-             (parseInt(document.getElementById('infants').value)||0)
+      total: (parseInt(document.getElementById('adults').value)||0) + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0)
     },
-    vehicles: vehicles,
-    preferences: preferences
+    preferences: prefs
   };
 }
 
-// ==================== 模块6：后端调用（安全版本） ====================
-async function callBackend(options){
+// ==================== AI 调用 ====================
+async function callAI(options){
   const API_URL = 'https://51ai-1.pages.dev/api/proxy';
-  
-  // 发送结构化选项，让后端组装Prompt
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch(API_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'deepseek-v4-flash',
       messages: [{
         role: 'system',
-        content: '你是资深旅行规划师，根据用户提供的结构化信息生成详细旅行方案。必须使用Markdown格式输出，包含车次/航班推荐。'
+        content: `你是资深旅行规划师。必须严格按照以下结构输出完整Markdown方案：
+
+## 🚄 城际交通（${options.from} → ${options.destination}）
+推荐具体车次/航班：
+| 交通方式 | 车次/航班号 | 出发-到达 | 耗时 | 参考票价 |
+高铁、飞机、火车、自驾分别列出1-2个具体选项。
+
+## 🏙️ 城市内部交通
+### 🚇 市内交通
+推荐地铁、公交、打车、共享单车（${options.destination}）的搭配方案。
+
+### 🚕 景点间接驳
+推荐景区之间用什么交通（旅游专线、打车、共享单车、步行距离）
+
+## 📅 每日详细行程
+（按天、按小时排列，包含景点、餐厅、交通方式）
+
+## 💰 预算分配表
+| 项目 | 费用 |
+## ⚠️ 注意事项
+## 🎒 必备物品清单（CheckList格式）`
       }, {
         role: 'user',
-        // 用户消息是结构化JSON，不是自由文本
-        content: JSON.stringify({
-          type: 'travel_plan_request',
-          version: '2.0',
-          options: options
-        })
+        content: JSON.stringify({ type: 'travel_plan_v3', options: options })
       }],
-      temperature: 0.7,
-      max_tokens: 3000,
-      stream: false
+      temperature: 0.7, max_tokens: 3000, stream: false
     })
   });
-  
-  const data = await response.json();
+  const data = await res.json();
   if(data.error) throw new Error(data.error);
   return data.choices[0].message.content;
 }
 
-// ==================== 模块7：Markdown渲染 ====================
-function renderMarkdown(markdown){
-  const content = document.getElementById('resultContent');
-  if(window.marked){
-    content.innerHTML = marked.parse(markdown);
-  } else {
-    content.innerHTML = '<pre style="white-space:pre-wrap">' + escapeHTML(markdown) + '</pre>';
-  }
-}
+// ==================== 渲染 ====================
+function renderMarkdown(md){ document.getElementById('resultContent').innerHTML = window.marked ? marked.parse(md) : '<pre>'+md+'</pre>'; }
 
-function escapeHTML(str){
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// ==================== 模块8：PDF下载 ====================
+// ==================== PDF ====================
 function downloadPDF(){
-  const element = document.getElementById('resultContent');
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: '旅行方案_' + new Date().toLocaleDateString() + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  const originalBg = element.style.background;
-  const originalColor = element.style.color;
-  element.style.background = '#fff';
-  element.style.color = '#333';
-  html2pdf().set(opt).from(element).save().then(() => {
-    element.style.background = originalBg;
-    element.style.color = originalColor;
-  });
+  const el = document.getElementById('resultContent');
+  const origBg = el.style.background, origColor = el.style.color;
+  el.style.background = '#fff'; el.style.color = '#333';
+  html2pdf().set({margin:[10,10,10,10], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background=origBg;el.style.color=origColor;});
 }
 
-// ==================== 模块9：主流程 ====================
+// ==================== 主流程 ====================
 async function startPlan(){
-  // 输入验证
-  const error = validateForm();
-  if(error){
-    alert(error);
-    return;
-  }
-  
-  const btn = document.getElementById('planBtn');
-  const loading = document.getElementById('loading');
-  const result = document.getElementById('result');
-  
-  btn.disabled = true;
-  btn.textContent = '规划中……';
-  result.classList.remove('active');
-  loading.classList.add('active');
-  
+  const err = validateForm(); if(err){ alert(err); return; }
+  const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
+  btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
   try {
-    // 获取结构化选项
-    const options = getSelectedOptions();
-    
-    // 调用后端（安全方式）
-    const markdown = await callBackend(options);
-    
-    // 渲染结果
-    renderMarkdown(markdown);
-    const totalPeople = options.people.total;
-    document.getElementById('resultMeta').textContent = 
-      `${options.origin} → ${options.destination} · ${options.days}天 · ${totalPeople}人 · ${options.budget}元`;
-    
-    loading.classList.remove('active');
-    result.classList.add('active');
+    const opts = getOptions();
+    const md = await callAI(opts);
+    renderMarkdown(md);
+    document.getElementById('resultMeta').textContent = `${opts.from} → ${opts.destination} · ${opts.days}天 · ${opts.people.total}人 · ${opts.budget}`;
+    loading.classList.remove('active'); result.classList.add('active');
     result.scrollIntoView({ behavior: 'smooth' });
-    
-  } catch(err) {
-    loading.classList.remove('active');
-    alert('生成失败：' + (err.message || '网络错误，请重试'));
-    console.error('规划错误：', err);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✨ 重新规划';
-  }
+  } catch(e) { loading.classList.remove('active'); alert('生成失败：' + (e.message || '重试')); }
+  finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
 }
 
-// ==================== 键盘提交 ====================
-document.addEventListener('keypress', function(e){
-  if(e.key === 'Enter' && e.target.tagName === 'INPUT'){
-    e.preventDefault();
-    startPlan();
-  }
-});
+document.addEventListener('keypress', e => { if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); startPlan(); } });
 </script>
 </body>
 </html>
