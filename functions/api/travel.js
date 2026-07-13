@@ -1,17 +1,3 @@
-// functions/api/travel.js
-// 旅游Agent专用后端 v3.4
-
-const rateLimitMap = new Map();
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip) || { count: 0, resetTime: now + 60000 };
-  if (now > record.resetTime) { record.count = 0; record.resetTime = now + 60000; }
-  record.count++;
-  rateLimitMap.set(ip, record);
-  return record.count <= 30;
-}
-
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -32,14 +18,6 @@ export async function onRequest(context) {
     });
   }
 
-  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  if (!checkRateLimit(ip)) {
-    return new Response(JSON.stringify({ error: '请求过于频繁' }), {
-      status: 429,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
-  }
-
   let body;
   try { body = await request.json(); } catch (e) {
     return new Response(JSON.stringify({ error: 'JSON解析失败' }), {
@@ -48,7 +26,6 @@ export async function onRequest(context) {
     });
   }
 
-  // ========== 激活码验证 ==========
   if (body.type === 'activate') {
     const code = (body.code || '').toUpperCase().trim();
     const answer = (body.answer || '').trim();
@@ -60,11 +37,10 @@ export async function onRequest(context) {
     }
 
     const codesStr = env.ACTIVATION_CODES || '';
-    const codeEntries = codesStr.split(',').map(c => c.trim()).filter(c => c);
     const codeMap = {};
-    codeEntries.forEach(entry => {
-      const [c, count] = entry.split(':');
-      if (c) codeMap[c.toUpperCase()] = parseInt(count || '1');
+    codesStr.split(',').forEach(entry => {
+      const parts = entry.trim().split(':');
+      if (parts[0]) codeMap[parts[0].toUpperCase()] = parseInt(parts[1] || '1');
     });
 
     if (!codeMap[code] || codeMap[code] <= 0) {
@@ -80,10 +56,10 @@ export async function onRequest(context) {
     }
 
     const parts = answer.split('|');
-    const challenge = parts[0] || '';
-    const userInput = parts[1] || '';
+    const challenge = (parts[0] || '').toUpperCase();
+    const userInput = (parts[1] || '').toUpperCase();
 
-    if (challenge.length !== 5 || userInput.toUpperCase() !== challenge.toUpperCase()) {
+    if (challenge.length !== 5 || userInput !== challenge) {
       return new Response(JSON.stringify({ valid: false, message: '验证字符不匹配', step: 2, code: code }), {
         status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
@@ -94,12 +70,20 @@ export async function onRequest(context) {
     });
   }
 
-  // ========== AI流式转发 ==========
-  const { messages, model = 'deepseek-v4-flash', temperature = 0.7, max_tokens = 3000 } = body;
+  const messages = body.messages;
+  const model = body.model || 'deepseek-v4-flash';
+  const temperature = body.temperature || 0.7;
+  const max_tokens = body.max_tokens || 3000;
 
-  if (!messages || !Array.isArray(messages)) {
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: '缺少messages参数' }), {
       status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+
+  if (!env.DEEPSEEK_API_KEY) {
+    return new Response(JSON.stringify({ error: '后端未配置API Key' }), {
+      status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
 
@@ -114,12 +98,11 @@ export async function onRequest(context) {
     });
 
     if (!aiResponse.ok) {
-      return new Response(JSON.stringify({ error: 'AI接口错误: ' + aiResponse.status }), {
+      return new Response(JSON.stringify({ error: 'AI接口返回错误: ' + aiResponse.status }), {
         status: 502, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
 
-    // 直接流式转发，不解析
     return new Response(aiResponse.body, {
       status: 200,
       headers: {
@@ -130,7 +113,7 @@ export async function onRequest(context) {
       },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: '服务器内部错误' }), {
+    return new Response(JSON.stringify({ error: '服务器内部错误: ' + error.message }), {
       status: 502, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
