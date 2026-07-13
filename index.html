@@ -100,13 +100,12 @@
 
 <script>
 // ==================== 城市列表 ====================
-const ALL_CITIES = ['北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安','石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','南京','苏州','无锡','杭州','宁波','温州','合肥','黄山','南昌','福州','厦门','武汉','长沙','张家界','广州','深圳','珠海','佛山','南宁','桂林','海口','三亚','成都','重庆','贵阳','昆明','大理','丽江','香格里拉','西双版纳','香港','澳门','台北','东京','大阪','京都','首尔','釜山','新加坡','曼谷','清迈','吉隆坡','河内','胡志明市','暹粒','巴厘岛','迪拜','伦敦','巴黎','柏林','罗马','米兰','威尼斯','巴塞罗那','马德里','阿姆斯特丹','布拉格','维也纳','莫斯科','纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','多伦多','悉尼','墨尔本','奥克兰','开罗','开普敦'];
+const ALL_CITIES = ['北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安','石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','南京','苏州','无锡','杭州','宁波','温州','合肥','黄山','南昌','福州','厦门','武汉','长沙','张家界','珠海','佛山','南宁','桂林','海口','三亚','成都','贵阳','昆明','大理','丽江','香格里拉','西双版纳','香港','澳门','台北','东京','大阪','京都','首尔','釜山','新加坡','曼谷','清迈','吉隆坡','河内','胡志明市','暹粒','巴厘岛','迪拜','伦敦','巴黎','柏林','罗马','米兰','威尼斯','巴塞罗那','马德里','阿姆斯特丹','布拉格','维也纳','莫斯科','纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','多伦多','悉尼','墨尔本','奥克兰','开罗','开普敦'];
 (function initCities(){
   const from = document.getElementById('from'), to = document.getElementById('destination');
   ALL_CITIES.forEach(c => { from.add(new Option(c,c)); to.add(new Option(c,c)); });
 })();
 
-// ==================== 标签选择 ====================
 document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', function(){ this.classList.toggle('selected'); }));
 
 // ==================== 日期联动 ====================
@@ -125,7 +124,7 @@ document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', f
 // ==================== 次数控制 ====================
 const API_URL = '/api/proxy';
 const FREE_LIMIT = 3;
-const STORAGE_KEY = 'travel_data_v3';
+const STORAGE_KEY = 'travel_data_v2';
 
 function getData(){
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -184,7 +183,7 @@ function getOptions(){
   };
 }
 
-// ==================== AI调用（非流式） ====================
+// ==================== AI调用（stream:false 稳定版） ====================
 async function startPlan(){
   const err = validateForm(); if(err){ alert(err); return; }
   if(!checkQuota()){ alert('今日免费次数已用完，请付费升级'); showPayPage(); return; }
@@ -192,9 +191,110 @@ async function startPlan(){
   btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
   try {
     const opts = getOptions();
-    const systemPrompt = '你是资深旅行规划师。请根据用户提供的信息生成一份详细的旅行方案。必须使用Markdown格式输出，包含具体车次/航班号、时间、票价、餐厅名称等细节。';
+    const systemPrompt = `你是资深旅行规划师。请根据用户提供的信息生成一份详细的旅行方案。必须使用Markdown格式输出，包含具体车次/航班号、时间、票价、餐厅名称等细节。`;
     const userMessage = `出发地：${opts.from}，目的地：${opts.destination}，天数：${opts.days}天，预算：${opts.budget}元，人数：成人${opts.people.adults}人小孩${opts.people.children}人老人${opts.people.elders}人，偏好：${opts.preferences.join('、')||'无'}，城际交通：${opts.cityVehicles.join('、')||'无偏好'}，景点间交通：${opts.localVehicles.join('、')||'无偏好'}，日期：${opts.startDate}至${opts.endDate}`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
-    const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ model:'deepseek-v
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'deepseek-v4-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) throw new Error('服务器错误 ' + res.status);
+    const data = await res.json();
+    const full = data.choices[0].message.content;
+
+    if (!full) throw new Error('AI返回为空');
+    document.getElementById('resultContent').innerHTML = marked.parse(full);
+    document.getElementById('resultMeta').textContent = `${opts.from}→${opts.destination} · ${opts.days}天 · ${opts.people.total}人 · ${opts.budget}元`;
+    useQuota(); loading.classList.remove('active'); result.classList.add('active'); result.scrollIntoView({behavior:'smooth'});
+  } catch(e){ loading.classList.remove('active'); alert('生成失败：'+(e.message||'请检查网络后重试')); }
+  finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
+}
+
+function downloadPDF(){
+  const el = document.getElementById('resultContent');
+  html2pdf().set({margin:[10,10,10,10], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save();
+}
+
+// ==================== 付费系统 ====================
+let pendingCode = '', verifyChallenge = '', verifyAttempts = 0;
+
+async function activatePaid(code, answer){
+  const c = (code||'').toUpperCase().trim(), a = (answer||'').trim();
+  if(verifyAttempts >= 5){ alert('验证尝试次数过多，请刷新后重试'); return false; }
+  try {
+    const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'activate', code:c, answer:a }) });
+    const data = await res.json();
+    if(data.valid){ verifyAttempts=0; const d = getData(); d.paid = true; saveData(d); updateBadge(); alert('激活成功！'); return true; }
+    if(data.step === 2){ pendingCode = data.code; showVerifyQuestion(); return false; }
+    verifyAttempts++; alert((data.message||'验证失败')+'（剩余：'+(5-verifyAttempts)+'次）'); return false;
+  } catch(e){ alert('网络错误'); return false; }
+}
+
+function showVerifyQuestion(){
+  verifyChallenge = ''; const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for(let i=0;i<5;i++) verifyChallenge += chars[Math.floor(Math.random()*chars.length)];
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10002;display:flex;align-items:center;justify-content:center';
+  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:12px">🔐 验证</h3><p style="color:#a0a0b8;font-size:13px;margin-bottom:4px">请复制下方字符粘贴到输入框：</p><p style="color:#f39c12;font-size:22px;font-weight:700;margin:10px 0;letter-spacing:4px;user-select:all;background:rgba(255,255,255,0.05);padding:8px;border-radius:8px">${verifyChallenge}</p><input type="text" id="verifyAnswer" placeholder="粘贴验证字符" maxlength="10" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="handleVerify(this)">确认</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">取消</button></div>`;
+  document.body.appendChild(div);
+}
+
+async function handleVerify(btn){
+  const answer = document.getElementById('verifyAnswer').value.trim();
+  if(!answer){ alert('请粘贴验证字符'); return; }
+  btn.disabled = true; btn.textContent = '验证中……';
+  const result = await activatePaid(pendingCode, verifyChallenge + '|' + answer);
+  if(result){ document.querySelectorAll('[style*="z-index:10001"], [style*="z-index:10002"]').forEach(el => el.remove()); }
+  else { btn.disabled = false; btn.textContent = '确认'; }
+}
+
+function showPayPage(){
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center';
+  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:8px">💎 付费升级</h3><p style="color:#f39c12;font-size:22px;font-weight:700">￥9.90 / 永久</p><p style="color:#a0a0b8;font-size:13px;margin:6px 0">解锁无限次AI旅行规划</p><div style="display:flex;gap:12px;justify-content:center;margin:12px 0"><div style="text-align:center"><p style="color:#aaa;font-size:11px">支付宝</p><img src="https://i.ibb.co/0yFnTKS0/IMG-7071.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px" alt="支付宝"></div><div style="text-align:center"><p style="color:#aaa;font-size:11px">微信</p><img src="https://i.ibb.co/6KHXJx8/IMG-7069.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px" alt="微信"></div></div><p style="color:#e74c3c;font-size:11px;margin:4px 0">虚拟商品一经售出概不退款</p><p style="color:#fff;font-size:13px;margin:8px 0">付款后截屏发给 <span style="color:#2ecc71">wxid_xccoegiluvnr12</span> 获取激活码</p><p style="color:#a0a0b8;font-size:12px;margin:8px 0">已有激活码？</p><input type="text" id="activateCode" placeholder="输入激活码" maxlength="20" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="activatePaid(document.getElementById('activateCode').value,'')">激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="exportActivation()">导出激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="importActivation()">导入激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>`;
+  document.body.appendChild(div);
+}
+
+function exportActivation(){
+  const d = getData(); if(!d.paid){ alert('未付费'); return; }
+  const blob = new Blob([JSON.stringify({paid:true,time:Date.now(),sign:btoa('valid_'+Date.now()).slice(0,12)})], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '旅行规划_激活备份.json'; a.click();
+  alert('有效期10分钟');
+}
+
+function importActivation(){
+  const input = document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange = e => {
+    const f = e.target.files[0], r = new FileReader();
+    r.onload = ev => {
+      try {
+        const d = JSON.parse(ev.target.result);
+        if(!d.time||Date.now()-d.time>600000){ alert('已过期'); return; }
+        if(d.paid&&d.sign&&d.sign.startsWith('dmFsaWRf')){ const u = getData(); u.paid=true; saveData(u); updateBadge(); alert('已导入'); }
+        else alert('格式不对');
+      } catch(e){ alert('格式不对'); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+}
+
+updateBadge();
+</script>
+</body>
+</html>
