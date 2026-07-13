@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · AI Agent v3.3</title>
+  <title>旅行规划师 · AI Agent v3.2</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -14,15 +14,14 @@
     .header h1{color:#fff;font-size:28px;font-weight:700}
     .header p{color:#a0a0b8;font-size:14px;margin-top:6px}
     .header .emoji{font-size:40px;display:block;margin-bottom:8px}
-    .usage-badge{display:inline-block;background:rgba(255,255,255,0.1);padding:6px 14px;border-radius:20px;color:#f39c12;font-size:12px;margin-top:8px}
     .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
     .card-title{color:#e0e0e0;font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .form-group{display:flex;flex-direction:column;gap:6px}
     .form-group.full{grid-column:1/-1}
     .form-group label{color:#b0b0c0;font-size:13px;font-weight:500}
-    .form-group input,.form-group select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:all 0.2s}
-    .form-group input:focus,.form-group select:focus{border-color:#4a9eff;background:rgba(255,255,255,0.1)}
+    .form-group select,.form-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:all 0.2s}
+    .form-group select:focus,.form-group input:focus{border-color:#4a9eff;background:rgba(255,255,255,0.1)}
     .form-group select option{background:#1a1a2e;color:#fff}
     .tag-group{display:flex;flex-wrap:wrap;gap:8px}
     .tag{padding:8px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:#b0b0c0;font-size:13px;cursor:pointer;transition:all 0.2s;user-select:none}
@@ -53,7 +52,6 @@
     .result-content table{width:100%;border-collapse:collapse;margin:12px 0}
     .result-content th,.result-content td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}
     .result-content th{background:rgba(74,158,255,0.2);color:#4a9eff}
-    .tips{color:#888;font-size:12px;text-align:center;margin-top:8px}
     .date-row{display:flex;gap:10px;align-items:center}
     .date-row input{flex:1}
     @media(max-width:600px){.form-grid{grid-template-columns:1fr}.header h1{font-size:22px}}
@@ -63,9 +61,8 @@
 <div class="container">
   <div class="header">
     <span class="emoji">🧳</span>
-    <h1>旅行规划师 v3.3</h1>
-    <p>城际交通 · 市内接驳 · 景点间载具自选 · PDF 下载</p>
-    <div class="usage-badge" id="usageBadge">🆓 今日剩余：3次</div>
+    <h1>旅行规划师 v3.2</h1>
+    <p>AI 智能规划 · 城际交通 · 市内接驳 · PDF 下载</p>
   </div>
 
   <div class="card">
@@ -74,227 +71,96 @@
       <div class="form-group"><label>🏠 始发地</label><select id="from"><option value="">请选择</option></select></div>
       <div class="form-group"><label>🌍 目的地</label><select id="destination"><option value="">请选择</option></select></div>
       <div class="form-group"><label>💰 预算（元，最低100）</label><input type="number" id="budget" placeholder="如：5000" min="100"></div>
-      <div class="form-group"><label>📅 出发日期</label><div class="date-row"><input type="date" id="startDate"><span>→</span><input type="date" id="endDate"></div><span style="color:#888;font-size:11px;margin-top:4px" id="dayCount">选择日期后自动计算天数</span></div>
-      <div class="form-group full"><label>👥 出行人员</label><div class="people-row"><span>🧑 成人</span><input type="number" id="adults" value="1" min="0" max="20"><span>👶 小孩</span><input type="number" id="children" value="0" min="0" max="10"><span>👴 老人</span><input type="number" id="elders" value="0" min="0" max="10"></div></div>
-      <div class="form-group full"><label>🚄 城际交通偏好</label><div class="tag-group" id="cityTags"><span class="tag" data-val="高铁">🚄 高铁</span><span class="tag" data-val="飞机">✈️ 飞机</span><span class="tag" data-val="火车">🚂 火车</span><span class="tag" data-val="自驾">🚗 自驾</span><span class="tag" data-val="大巴">🚌 大巴</span></div></div>
-      <div class="form-group full"><label>🚕 景点间交通工具</label><div class="tag-group" id="localTags"><span class="tag" data-val="地铁">🚇 地铁</span><span class="tag" data-val="公交">🚌 公交</span><span class="tag" data-val="打车">🚕 打车</span><span class="tag" data-val="共享单车">🚲 共享单车</span><span class="tag" data-val="步行">🚶 步行</span><span class="tag" data-val="景区专线">🚐 景区专线</span></div></div>
-      <div class="form-group full"><label>🎯 旅行偏好</label><div class="tag-group" id="prefTags"><span class="tag" data-val="美食">🍜 美食</span><span class="tag" data-val="拍照">📸 拍照</span><span class="tag" data-val="购物">🛍️ 购物</span><span class="tag" data-val="自然风光">🏔️ 自然风光</span><span class="tag" data-val="历史文化">🏛️ 历史文化</span><span class="tag" data-val="放松度假">🏖️ 放松度假</span></div></div>
+      <div class="form-group"><label>📅 日期范围</label><div class="date-row"><input type="date" id="startDate"><span>→</span><input type="date" id="endDate"></div><span style="color:#888;font-size:11px" id="dayCount">选择日期自动计算天数</span></div>
+      <div class="form-group full"><label>👥 出行人员</label><div class="people-row"><span>🧑成人</span><input type="number" id="adults" value="1" min="0" max="20"><span>👶小孩</span><input type="number" id="children" value="0" min="0" max="10"><span>👴老人</span><input type="number" id="elders" value="0" min="0" max="10"></div></div>
+      <div class="form-group full"><label>🚄 城际交通</label><div class="tag-group" id="cityTags"><span class="tag" data-val="高铁">🚄高铁</span><span class="tag" data-val="飞机">✈️飞机</span><span class="tag" data-val="火车">🚂火车</span><span class="tag" data-val="自驾">🚗自驾</span><span class="tag" data-val="大巴">🚌大巴</span></div></div>
+      <div class="form-group full"><label>🚕 景点间交通</label><div class="tag-group" id="localTags"><span class="tag" data-val="地铁">🚇地铁</span><span class="tag" data-val="公交">🚌公交</span><span class="tag" data-val="打车">🚕打车</span><span class="tag" data-val="共享单车">🚲共享单车</span><span class="tag" data-val="步行">🚶步行</span><span class="tag" data-val="景区专线">🚐景区专线</span></div></div>
+      <div class="form-group full"><label>🎯 旅行偏好</label><div class="tag-group" id="prefTags"><span class="tag" data-val="美食">🍜美食</span><span class="tag" data-val="拍照">📸拍照</span><span class="tag" data-val="购物">🛍️购物</span><span class="tag" data-val="自然风光">🏔️自然</span><span class="tag" data-val="历史文化">🏛️历史</span><span class="tag" data-val="放松度假">🏖️度假</span></div></div>
     </div>
     <button class="btn-primary" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在为你规划旅行方案……</div></div>
+  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划旅行方案……</div></div>
 
   <div class="result" id="result">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="justify-content:space-between"><span>📝 你的旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
+      <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
       <div class="result-content" id="resultContent"></div>
       <button class="btn-secondary" onclick="downloadPDF()">📄 下载 PDF</button>
-      <button class="btn-secondary" onclick="showPayPage()">💎 付费升级（无限次）</button>
       <button class="btn-secondary" onclick="window.location.reload()">🔄 重新规划</button>
     </div>
   </div>
-
-  <p class="tips">💡 免费每天3次 · 付费无限次 · v3.3<br>⚠️ 虚拟商品一经售出概不退款</p>
 </div>
 
 <script>
-// ==================== 城市列表 ====================
-const ALL_CITIES = ['北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安','石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','南京','苏州','无锡','杭州','宁波','温州','合肥','黄山','南昌','福州','厦门','武汉','长沙','张家界','珠海','佛山','南宁','桂林','海口','三亚','成都','贵阳','昆明','大理','丽江','香格里拉','西双版纳','香港','澳门','台北','东京','大阪','京都','首尔','釜山','新加坡','曼谷','清迈','吉隆坡','河内','胡志明市','暹粒','巴厘岛','迪拜','伦敦','巴黎','柏林','罗马','米兰','威尼斯','巴塞罗那','马德里','阿姆斯特丹','布拉格','维也纳','莫斯科','纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','多伦多','悉尼','墨尔本','奥克兰','开罗','开普敦'];
-(function initCities(){
-  const from = document.getElementById('from'), to = document.getElementById('destination');
-  ALL_CITIES.forEach(c => { from.add(new Option(c,c)); to.add(new Option(c,c)); });
+const ALL_CITIES = ['北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安','石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','开封','南京','苏州','无锡','常州','南通','扬州','徐州','杭州','宁波','温州','绍兴','嘉兴','湖州','金华','舟山','合肥','黄山','芜湖','南昌','九江','景德镇','福州','厦门','泉州','武夷山','武汉','宜昌','长沙','张家界','岳阳','凤凰','珠海','佛山','东莞','中山','惠州','汕头','湛江','南宁','桂林','北海','柳州','海口','三亚','万宁','陵水','成都','绵阳','乐山','峨眉山','九寨沟','稻城','康定','贵阳','遵义','安顺','黄果树','昆明','大理','丽江','香格里拉','西双版纳','腾冲','香港','澳门','台北','高雄','台中','台南','花莲','东京','大阪','京都','札幌','首尔','釜山','济州','新加坡','曼谷','清迈','普吉','芭提雅','吉隆坡','槟城','马六甲','河内','胡志明市','岘港','暹粒','金边','仰光','马尼拉','长滩岛','雅加达','巴厘岛','马尔代夫','迪拜','阿布扎比','伊斯坦布尔','伦敦','曼彻斯特','爱丁堡','巴黎','尼斯','里昂','柏林','慕尼黑','法兰克福','罗马','米兰','威尼斯','佛罗伦萨','巴塞罗那','马德里','里斯本','阿姆斯特丹','布鲁塞尔','苏黎世','日内瓦','维也纳','布拉格','布达佩斯','莫斯科','圣彼得堡','雅典','圣托里尼','纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','波士顿','华盛顿','温哥华','多伦多','蒙特利尔','悉尼','墨尔本','布里斯班','黄金海岸','奥克兰','皇后镇','开罗','开普敦','约翰内斯堡','内罗毕','卡萨布兰卡'];
+
+(function(){
+  const from = document.getElementById('from'), dest = document.getElementById('destination');
+  ALL_CITIES.forEach(c => { from.add(new Option(c,c)); dest.add(new Option(c,c)); });
 })();
 
-document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', function(){ this.classList.toggle('selected'); }));
+document.querySelectorAll('.tag').forEach(t => t.addEventListener('click', function(){ this.classList.toggle('selected'); }));
 
-// ==================== 日期联动 ====================
 (function(){
   const s = document.getElementById('startDate'), e = document.getElementById('endDate'), d = document.getElementById('dayCount');
-  function update(){
-    if(s.value && e.value){
-      const diff = Math.ceil((new Date(e.value)-new Date(s.value))/86400000);
-      d.textContent = diff > 0 ? '共 '+diff+' 天' : '日期范围不正确';
-      if(diff <= 0) e.value = '';
-    }
-  }
-  s.addEventListener('change', update); e.addEventListener('change', update);
+  function u(){ if(s.value&&e.value){ const diff = Math.ceil((new Date(e.value)-new Date(s.value))/86400000); d.textContent = diff>0 ? '共'+diff+'天' : '日期不正确'; } }
+  s.addEventListener('change',u); e.addEventListener('change',u);
 })();
 
-// ==================== 次数控制 ====================
-const API_URL = '/api/proxy';
-const FREE_LIMIT = 3;
-const STORAGE_KEY = 'travel_data_v2';
+function getSelected(id){ const r=[]; document.querySelectorAll('#'+id+' .tag.selected').forEach(t=>r.push(t.dataset.val)); return r; }
 
-function getData(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return { date: '', count: 0, paid: false };
-  let d;
-  try { d = JSON.parse(raw); } catch(e) { d = {}; }
-  const storedHash = d._hash || '';
-  const checkStr = (d.date||'') + (d.count||0) + (d.paid?'1':'0');
-  const computedHash = btoa(checkStr).slice(0,8);
-  if(storedHash !== computedHash) d = { date: '', count: 0, paid: false };
-  const today = new Date().toLocaleDateString();
-  if(d.date !== today) d = { date: today, count: 0, paid: d.paid || false };
-  return d;
-}
-function saveData(d){
-  d._hash = btoa((d.date||'')+(d.count||0)+(d.paid?'1':'0')).slice(0,8);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
-}
-function updateBadge(){
-  const d = getData(), b = document.getElementById('usageBadge');
-  if(d.paid){ b.textContent = '💎 已付费 · 无限次'; b.style.color = '#2ecc71'; }
-  else {
-    const r = FREE_LIMIT - d.count;
-    b.textContent = r > 0 ? `🆓 今日剩余：${r}次` : '🆓 今日次数已用完';
-    if(r <= 0) b.style.color = '#e74c3c';
-  }
-}
-function checkQuota(){ const d = getData(); return d.paid || d.count < FREE_LIMIT; }
-function useQuota(){ const d = getData(); if(!d.paid){ d.count++; saveData(d); } updateBadge(); }
-
-// ==================== 验证 ====================
-function validateForm(){
-  const from = document.getElementById('from').value, dest = document.getElementById('destination').value;
-  const budget = parseFloat(document.getElementById('budget').value);
-  const start = document.getElementById('startDate').value, end = document.getElementById('endDate').value;
-  const adults = parseInt(document.getElementById('adults').value) || 0;
-  const total = adults + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0);
-  if(!from || !dest) return '请选择始发地和目的地';
-  if(from === dest) return '始发地和目的地不能相同';
-  if(!budget || budget < 100) return '预算至少100元';
-  if(!start || !end) return '请选择出发和返程日期';
-  if(new Date(start) < new Date(new Date().toDateString())) return '出发日期不能是过去';
-  if(total === 0) return '请至少添加1位出行人员';
+function validate(){
+  const from=document.getElementById('from').value, dest=document.getElementById('destination').value;
+  if(!from||!dest) return '请选择始发地和目的地';
+  if(from===dest) return '始发地和目的地不能相同';
+  const budget=parseFloat(document.getElementById('budget').value);
+  if(!budget||budget<100) return '预算至少100元';
+  if(!document.getElementById('startDate').value||!document.getElementById('endDate').value) return '请选择日期';
+  const total=(parseInt(document.getElementById('adults').value)||0)+(parseInt(document.getElementById('children').value)||0)+(parseInt(document.getElementById('elders').value)||0);
+  if(total===0) return '请至少添加1位出行人员';
   return null;
 }
 
 function getOptions(){
-  const getSelected = id => { const r = []; document.querySelectorAll('#'+id+' .tag.selected').forEach(t => r.push(t.dataset.val)); return r; };
   return {
-    from: document.getElementById('from').value, destination: document.getElementById('destination').value,
-    budget: parseFloat(document.getElementById('budget').value) || 0,
-    days: parseInt(document.getElementById('dayCount').textContent) || 0,
-    startDate: document.getElementById('startDate').value, endDate: document.getElementById('endDate').value,
-    people: { adults: parseInt(document.getElementById('adults').value)||0, children: parseInt(document.getElementById('children').value)||0, elders: parseInt(document.getElementById('elders').value)||0, total: (parseInt(document.getElementById('adults').value)||0)+(parseInt(document.getElementById('children').value)||0)+(parseInt(document.getElementById('elders').value)||0) },
-    cityVehicles: getSelected('cityTags'), localVehicles: getSelected('localTags'), preferences: getSelected('prefTags')
+    from: document.getElementById('from').value,
+    destination: document.getElementById('destination').value,
+    budget: parseFloat(document.getElementById('budget').value)||0,
+    days: parseInt(document.getElementById('dayCount').textContent)||0,
+    startDate: document.getElementById('startDate').value,
+    endDate: document.getElementById('endDate').value,
+    people: { adults: parseInt(document.getElementById('adults').value)||0, children: parseInt(document.getElementById('children').value)||0, elders: parseInt(document.getElementById('elders').value)||0 },
+    cityVehicles: getSelected('cityTags'),
+    localVehicles: getSelected('localTags'),
+    preferences: getSelected('prefTags')
   };
 }
 
-// ==================== AI调用（stream:false 稳定版） ====================
 async function startPlan(){
-  const err = validateForm(); if(err){ alert(err); return; }
-  if(!checkQuota()){ alert('今日免费次数已用完，请付费升级'); showPayPage(); return; }
-  const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
-  btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
+  const err=validate(); if(err){ alert(err); return; }
+  const btn=document.getElementById('planBtn'), loading=document.getElementById('loading'), result=document.getElementById('result');
+  btn.disabled=true; btn.textContent='规划中…'; result.classList.remove('active'); loading.classList.add('active');
   try {
-    const opts = getOptions();
-    const systemPrompt = `你是资深旅行规划师。请根据用户提供的信息生成一份详细的旅行方案。必须使用Markdown格式输出，包含具体车次/航班号、时间、票价、餐厅名称等细节。`;
-    const userMessage = `出发地：${opts.from}，目的地：${opts.destination}，天数：${opts.days}天，预算：${opts.budget}元，人数：成人${opts.people.adults}人小孩${opts.people.children}人老人${opts.people.elders}人，偏好：${opts.preferences.join('、')||'无'}，城际交通：${opts.cityVehicles.join('、')||'无偏好'}，景点间交通：${opts.localVehicles.join('、')||'无偏好'}，日期：${opts.startDate}至${opts.endDate}`;
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'deepseek-v4-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.7,
-        max_tokens: 3000,
-        stream: false
-      }),
-      signal: controller.signal
-    });
+    const opts=getOptions();
+    const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),30000);
+    const res=await fetch('/api/travel', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({options:opts}), signal:controller.signal });
     clearTimeout(timeout);
-
-    if (!res.ok) throw new Error('服务器错误 ' + res.status);
-    const data = await res.json();
-    const full = data.choices[0].message.content;
-
-    if (!full) throw new Error('AI返回为空');
-    document.getElementById('resultContent').innerHTML = marked.parse(full);
-    document.getElementById('resultMeta').textContent = `${opts.from}→${opts.destination} · ${opts.days}天 · ${opts.people.total}人 · ${opts.budget}元`;
-    useQuota(); loading.classList.remove('active'); result.classList.add('active'); result.scrollIntoView({behavior:'smooth'});
-  } catch(e){ loading.classList.remove('active'); alert('生成失败：'+(e.message||'请检查网络后重试')); }
-  finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
+    if(!res.ok){ const d=await res.json().catch(()=>({})); throw new Error(d.error||'服务器错误'); }
+    const reader=res.body.getReader(), decoder=new TextDecoder(); let full='', buf='';
+    while(true){ const{done,value}=await reader.read(); if(done) break; buf+=decoder.decode(value,{stream:true}); const lines=buf.split('\n'); buf=lines.pop()||''; for(const line of lines){ const t=line.trim(); if(!t||t==='data: [DONE]') continue; if(!t.startsWith('data: ')) continue; try{ const d=JSON.parse(t.slice(6)); const delta=d.choices?.[0]?.delta?.content; if(delta) full+=delta; }catch(e){} } }
+    if(!full) throw new Error('AI返回为空');
+    document.getElementById('resultContent').innerHTML = window.marked ? marked.parse(full) : '<pre>'+full+'</pre>';
+    document.getElementById('resultMeta').textContent = `${opts.from}→${opts.destination}·${opts.days}天·${opts.budget}元`;
+    loading.classList.remove('active'); result.classList.add('active'); result.scrollIntoView({behavior:'smooth'});
+  } catch(e){ loading.classList.remove('active'); alert('生成失败：'+(e.message||'网络错误')); }
+  finally { btn.disabled=false; btn.textContent='✨ 重新规划'; }
 }
 
 function downloadPDF(){
-  const el = document.getElementById('resultContent');
-  html2pdf().set({margin:[10,10,10,10], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save();
+  const el=document.getElementById('resultContent');
+  html2pdf().set({margin:[8,8,8,8],filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save();
 }
-
-// ==================== 付费系统 ====================
-let pendingCode = '', verifyChallenge = '', verifyAttempts = 0;
-
-async function activatePaid(code, answer){
-  const c = (code||'').toUpperCase().trim(), a = (answer||'').trim();
-  if(verifyAttempts >= 5){ alert('验证尝试次数过多，请刷新后重试'); return false; }
-  try {
-    const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'activate', code:c, answer:a }) });
-    const data = await res.json();
-    if(data.valid){ verifyAttempts=0; const d = getData(); d.paid = true; saveData(d); updateBadge(); alert('激活成功！'); return true; }
-    if(data.step === 2){ pendingCode = data.code; showVerifyQuestion(); return false; }
-    verifyAttempts++; alert((data.message||'验证失败')+'（剩余：'+(5-verifyAttempts)+'次）'); return false;
-  } catch(e){ alert('网络错误'); return false; }
-}
-
-function showVerifyQuestion(){
-  verifyChallenge = ''; const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  for(let i=0;i<5;i++) verifyChallenge += chars[Math.floor(Math.random()*chars.length)];
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10002;display:flex;align-items:center;justify-content:center';
-  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:12px">🔐 验证</h3><p style="color:#a0a0b8;font-size:13px;margin-bottom:4px">请复制下方字符粘贴到输入框：</p><p style="color:#f39c12;font-size:22px;font-weight:700;margin:10px 0;letter-spacing:4px;user-select:all;background:rgba(255,255,255,0.05);padding:8px;border-radius:8px">${verifyChallenge}</p><input type="text" id="verifyAnswer" placeholder="粘贴验证字符" maxlength="10" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="handleVerify(this)">确认</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">取消</button></div>`;
-  document.body.appendChild(div);
-}
-
-async function handleVerify(btn){
-  const answer = document.getElementById('verifyAnswer').value.trim();
-  if(!answer){ alert('请粘贴验证字符'); return; }
-  btn.disabled = true; btn.textContent = '验证中……';
-  const result = await activatePaid(pendingCode, verifyChallenge + '|' + answer);
-  if(result){ document.querySelectorAll('[style*="z-index:10001"], [style*="z-index:10002"]').forEach(el => el.remove()); }
-  else { btn.disabled = false; btn.textContent = '确认'; }
-}
-
-function showPayPage(){
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center';
-  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:8px">💎 付费升级</h3><p style="color:#f39c12;font-size:22px;font-weight:700">￥9.90 / 永久</p><p style="color:#a0a0b8;font-size:13px;margin:6px 0">解锁无限次AI旅行规划</p><div style="display:flex;gap:12px;justify-content:center;margin:12px 0"><div style="text-align:center"><p style="color:#aaa;font-size:11px">支付宝</p><img src="https://i.ibb.co/0yFnTKS0/IMG-7071.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px" alt="支付宝"></div><div style="text-align:center"><p style="color:#aaa;font-size:11px">微信</p><img src="https://i.ibb.co/6KHXJx8/IMG-7069.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px" alt="微信"></div></div><p style="color:#e74c3c;font-size:11px;margin:4px 0">虚拟商品一经售出概不退款</p><p style="color:#fff;font-size:13px;margin:8px 0">付款后截屏发给 <span style="color:#2ecc71">wxid_xccoegiluvnr12</span> 获取激活码</p><p style="color:#a0a0b8;font-size:12px;margin:8px 0">已有激活码？</p><input type="text" id="activateCode" placeholder="输入激活码" maxlength="20" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="activatePaid(document.getElementById('activateCode').value,'')">激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="exportActivation()">导出激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="importActivation()">导入激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>`;
-  document.body.appendChild(div);
-}
-
-function exportActivation(){
-  const d = getData(); if(!d.paid){ alert('未付费'); return; }
-  const blob = new Blob([JSON.stringify({paid:true,time:Date.now(),sign:btoa('valid_'+Date.now()).slice(0,12)})], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '旅行规划_激活备份.json'; a.click();
-  alert('有效期10分钟');
-}
-
-function importActivation(){
-  const input = document.createElement('input'); input.type='file'; input.accept='.json';
-  input.onchange = e => {
-    const f = e.target.files[0], r = new FileReader();
-    r.onload = ev => {
-      try {
-        const d = JSON.parse(ev.target.result);
-        if(!d.time||Date.now()-d.time>600000){ alert('已过期'); return; }
-        if(d.paid&&d.sign&&d.sign.startsWith('dmFsaWRf')){ const u = getData(); u.paid=true; saveData(u); updateBadge(); alert('已导入'); }
-        else alert('格式不对');
-      } catch(e){ alert('格式不对'); }
-    };
-    r.readAsText(f);
-  };
-  input.click();
-}
-
-updateBadge();
 </script>
 </body>
 </html>
