@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · AI Agent v3.5</title>
+  <title>旅行规划师 · AI Agent v3.6</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -14,7 +14,6 @@
     .header h1{color:#fff;font-size:28px;font-weight:700}
     .header p{color:#a0a0b8;font-size:14px;margin-top:6px}
     .header .emoji{font-size:40px;display:block;margin-bottom:8px}
-    .usage-badge{display:inline-block;background:rgba(255,255,255,0.1);padding:6px 14px;border-radius:20px;color:#f39c12;font-size:12px;margin-top:8px}
     .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
     .card-title{color:#e0e0e0;font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -63,9 +62,8 @@
 <div class="container">
   <div class="header">
     <span class="emoji">🧳</span>
-    <h1>旅行规划师 v3.5</h1>
-    <p>AI 智能规划 · 城际交通 · 景点接驳 · PDF 下载</p>
-    <div class="usage-badge" id="usageBadge">🆓 今日剩余：3次</div>
+    <h1>旅行规划师 v3.6</h1>
+    <p>AI 智能规划 · 付费激活 · PDF 下载</p>
   </div>
 
   <div class="card">
@@ -90,18 +88,19 @@
       <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
       <div class="result-content" id="resultContent"></div>
       <button class="btn-secondary" onclick="downloadPDF()">📄 下载 PDF</button>
-      <button class="btn-secondary" onclick="showPayPage()">💎 付费升级（无限次）</button>
       <button class="btn-secondary" onclick="window.location.reload()">🔄 重新规划</button>
     </div>
   </div>
 
-  <p class="tips">💡 免费每天3次 · 付费无限次 · v3.5<br>⚠️ 虚拟商品一经售出概不退款</p>
+  <p class="tips">💡 请先付费激活后使用 · 虚拟商品一经售出概不退款</p>
 </div>
 
 <script>
 const API_URL = 'https://51ai-1.pages.dev/api/proxy';
-const FREE_LIMIT = 3;
-const STORAGE_KEY = 'travel_data_v3';
+const STORAGE_KEY = 'travel_paid_v1';
+
+function getPaid(){ return localStorage.getItem(STORAGE_KEY) === '1'; }
+function setPaid(){ localStorage.setItem(STORAGE_KEY, '1'); }
 
 const ALL_CITIES = [
   '北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安','石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','开封','南京','苏州','无锡','常州','南通','扬州','徐州','杭州','宁波','温州','绍兴','嘉兴','湖州','金华','舟山','合肥','黄山','芜湖','南昌','九江','景德镇','福州','厦门','泉州','武夷山','武汉','宜昌','长沙','张家界','岳阳','凤凰','珠海','佛山','东莞','中山','惠州','汕头','湛江','南宁','桂林','北海','柳州','海口','三亚','万宁','陵水','成都','绵阳','乐山','峨眉山','九寨沟','稻城','康定','贵阳','遵义','安顺','黄果树','昆明','大理','丽江','香格里拉','西双版纳','腾冲','香港','澳门','台北','高雄','台中','台南','花莲','东京','大阪','京都','札幌','首尔','釜山','济州','新加坡','曼谷','清迈','普吉','芭提雅','吉隆坡','槟城','马六甲','河内','胡志明市','岘港','暹粒','金边','仰光','马尼拉','长滩岛','雅加达','巴厘岛','马尔代夫','迪拜','阿布扎比','伊斯坦布尔','伦敦','曼彻斯特','爱丁堡','巴黎','尼斯','里昂','柏林','慕尼黑','法兰克福','罗马','米兰','威尼斯','佛罗伦萨','巴塞罗那','马德里','里斯本','阿姆斯特丹','布鲁塞尔','苏黎世','日内瓦','维也纳','布拉格','布达佩斯','莫斯科','圣彼得堡','雅典','圣托里尼','纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','波士顿','华盛顿','温哥华','多伦多','蒙特利尔','悉尼','墨尔本','布里斯班','黄金海岸','奥克兰','皇后镇','开罗','开普敦','约翰内斯堡','内罗毕','卡萨布兰卡'
@@ -127,54 +126,6 @@ document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', f
   start.addEventListener('change', updateDays); end.addEventListener('change', updateDays);
 })();
 
-function getData(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return { date: '', count: 0, paid: false, activationCode: '' };
-  let d; try { d = JSON.parse(raw); } catch(e) { d = {}; }
-  const h = d._hash || '', c = (d.date||'') + (d.count||0) + (d.paid?'1':'0') + (d.activationCode||'');
-  if(h !== btoa(c).slice(0,8)) d = { date: '', count: 0, paid: false, activationCode: '' };
-  const today = new Date().toLocaleDateString();
-  if(d.date !== today) d = { date: today, count: 0, paid: d.paid || false, activationCode: d.activationCode || '' };
-  return d;
-}
-
-function saveData(d){ const c = (d.date||'') + (d.count||0) + (d.paid?'1':'0') + (d.activationCode||''); d._hash = btoa(c).slice(0,8); localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-function updateBadge(){ const d = getData(), b = document.getElementById('usageBadge'); if(d.paid){ b.textContent = '💎 已付费 · 无限次'; b.style.color = '#2ecc71'; } else { const r = FREE_LIMIT - d.count; b.textContent = r > 0 ? `🆓 今日剩余：${r}次` : '🆓 今日次数已用完'; if(r <= 0) b.style.color = '#e74c3c'; } }
-function checkQuota(){ return getData().paid || getData().count < FREE_LIMIT; }
-function useQuota(){ const d = getData(); if(!d.paid){ d.count++; saveData(d); } updateBadge(); }
-
-let pendingCode = '', verifyAttempts = 0, verifyChallenge = '';
-
-async function activatePaid(code, answer){
-  const c = (code || '').toUpperCase().trim(), a = (answer || '').trim();
-  if(verifyAttempts >= 5){ alert('验证次数过多，请刷新'); return false; }
-  try {
-    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'activate', code: c, answer: a }) });
-    const data = await res.json();
-    if(data.valid){ verifyAttempts = 0; const used = JSON.parse(localStorage.getItem('used_codes') || '[]'); if(used.includes(c)){ alert('激活码已被使用'); return false; } used.push(c); localStorage.setItem('used_codes', JSON.stringify(used)); const dd = getData(); dd.paid = true; dd.activationCode = c; saveData(dd); updateBadge(); alert('激活成功！'); return true; }
-    if(data.step === 2){ pendingCode = data.code; showVerify(); return false; }
-    verifyAttempts++; alert((data.message || '验证失败') + '（剩余' + (5-verifyAttempts) + '次）'); return false;
-  } catch(e) { alert('网络错误，请重试'); return false; }
-}
-
-function showVerify(){
-  verifyChallenge = ''; const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  for(let i = 0; i < 5; i++) verifyChallenge += chars[Math.floor(Math.random() * chars.length)];
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10002;display:flex;align-items:center;justify-content:center';
-  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:12px">🔐 验证</h3><p style="color:#a0a0b8;font-size:13px;margin-bottom:4px">复制粘贴下方字符：</p><p style="color:#f39c12;font-size:22px;font-weight:700;margin:10px 0;letter-spacing:4px;user-select:all;background:rgba(255,255,255,0.05);padding:8px;border-radius:8px">${verifyChallenge}</p><input type="text" id="verifyAnswer" placeholder="粘贴验证字符" maxlength="10" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="handleVerify(this)">确认</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">取消</button></div>`;
-  document.body.appendChild(div);
-}
-
-async function handleVerify(btn){
-  const answer = document.getElementById('verifyAnswer').value.trim();
-  if(!answer){ alert('请粘贴验证字符'); return; }
-  btn.disabled = true; btn.textContent = '验证中…';
-  const result = await activatePaid(pendingCode, verifyChallenge + '|' + answer);
-  if(result){ document.querySelectorAll('[style*="z-index:10001"], [style*="z-index:10002"]').forEach(el => el.remove()); }
-  else { btn.disabled = false; btn.textContent = '确认'; }
-}
-
 function validateForm(){
   const from = document.getElementById('from').value, dest = document.getElementById('destination').value;
   const budget = parseFloat(document.getElementById('budget').value);
@@ -197,19 +148,77 @@ function getOptions(){
     budget: parseFloat(document.getElementById('budget').value) || 0,
     days: parseInt(document.getElementById('dayCount').textContent) || 0,
     start: document.getElementById('startDate').value, end: document.getElementById('endDate').value,
-    people: {
-      adults: parseInt(document.getElementById('adults').value) || 0,
-      children: parseInt(document.getElementById('children').value) || 0,
-      elders: parseInt(document.getElementById('elders').value) || 0,
-      total: (parseInt(document.getElementById('adults').value)||0) + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0)
-    },
+    people: { adults: parseInt(document.getElementById('adults').value)||0, children: parseInt(document.getElementById('children').value)||0, elders: parseInt(document.getElementById('elders').value)||0, total: (parseInt(document.getElementById('adults').value)||0)+(parseInt(document.getElementById('children').value)||0)+(parseInt(document.getElementById('elders').value)||0) },
     cityVehicles: gs('cityTags'), localVehicles: gs('localTags'), preferences: gs('prefTags')
   };
 }
 
+let pendingCode = '', verifyChallenge = '';
+
+function showPayPage(){
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center';
+  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:8px">💎 付费激活</h3><p style="color:#f39c12;font-size:22px;font-weight:700">￥9.90 / 永久</p><p style="color:#a0a0b8;font-size:13px;margin:6px 0">无限次AI旅行规划 + PDF下载</p><div style="display:flex;gap:12px;justify-content:center;margin:12px 0"><div style="text-align:center"><p style="color:#aaa;font-size:11px">支付宝</p><img src="https://i.ibb.co/0yFnTKS0/IMG-7071.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px"></div><div style="text-align:center"><p style="color:#aaa;font-size:11px">微信</p><img src="https://i.ibb.co/6KHXJx8/IMG-7069.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px"></div></div><p style="color:#e74c3c;font-size:11px;margin:4px 0">虚拟商品一经售出概不退款</p><p style="color:#fff;font-size:13px;margin:8px 0">付款后截屏发给 <span style="color:#2ecc71">wxid_xccoegiluvnr12</span> 获取激活码</p><p style="color:#a0a0b8;font-size:12px;margin:8px 0">已有激活码？</p><input type="text" id="activateCode" placeholder="输入激活码" maxlength="20" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="activatePaid(document.getElementById('activateCode').value,'')">🔑 激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="exportActivation()">📤 导出激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="importActivation()">📥 导入激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>`;
+  document.body.appendChild(div);
+}
+
+async function activatePaid(code, answer){
+  const c = (code || '').toUpperCase().trim(), a = (answer || '').trim();
+  try {
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'activate', code: c, answer: a }) });
+    const data = await res.json();
+    if(data.valid){ setPaid(); alert('✅ 激活成功！'); document.querySelectorAll('[style*="z-index:10001"],[style*="z-index:10002"]').forEach(el => el.remove()); return true; }
+    if(data.step === 2){ pendingCode = data.code; showVerify(); return false; }
+    alert('❌ ' + (data.message || '激活码无效')); return false;
+  } catch(e) { alert('网络错误'); return false; }
+}
+
+function showVerify(){
+  verifyChallenge = ''; const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for(let i = 0; i < 5; i++) verifyChallenge += chars[Math.floor(Math.random() * chars.length)];
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10002;display:flex;align-items:center;justify-content:center';
+  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:12px">🔐 验证</h3><p style="color:#a0a0b8;font-size:13px;margin-bottom:4px">复制粘贴下方字符：</p><p style="color:#f39c12;font-size:22px;font-weight:700;margin:10px 0;letter-spacing:4px;user-select:all;background:rgba(255,255,255,0.05);padding:8px;border-radius:8px">${verifyChallenge}</p><input type="text" id="verifyAnswer" placeholder="粘贴验证字符" maxlength="10" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="handleVerify(this)">确认</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">取消</button></div>`;
+  document.body.appendChild(div);
+}
+
+async function handleVerify(btn){
+  const answer = document.getElementById('verifyAnswer').value.trim();
+  if(!answer){ alert('请粘贴验证字符'); return; }
+  btn.disabled = true; btn.textContent = '验证中…';
+  const result = await activatePaid(pendingCode, verifyChallenge + '|' + answer);
+  if(result){ document.querySelectorAll('[style*="z-index:10001"],[style*="z-index:10002"]').forEach(el => el.remove()); }
+  else { btn.disabled = false; btn.textContent = '确认'; }
+}
+
+function exportActivation(){
+  if(!getPaid()){ alert('你还没有激活付费权限'); return; }
+  const blob = new Blob([JSON.stringify({ paid: true, time: Date.now(), sign: btoa('valid_' + Date.now()).slice(0,12) })], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = '旅行规划_激活备份.json'; a.click();
+  alert('✅ 备份文件有效期10分钟，请尽快导入新设备。');
+}
+
+function importActivation(){
+  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const f = e.target.files[0], r = new FileReader();
+    r.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(!data.time || Date.now() - data.time > 600000){ alert('❌ 备份文件已过期（超10分钟），请重新导出'); return; }
+        if(data.paid && data.sign && data.sign.startsWith('dmFsaWRf')){ setPaid(); alert('✅ 已导入！'); }
+        else { alert('❌ 文件格式不对'); }
+      } catch(e) { alert('❌ 文件格式不对'); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+}
+
 async function startPlan(){
+  if(!getPaid()){ showPayPage(); return; }
   const err = validateForm(); if(err){ alert(err); return; }
-  if(!checkQuota()){ alert('今日免费次数已用完'); showPayPage(); return; }
   const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
   btn.disabled = true; btn.textContent = '规划中…'; result.classList.remove('active'); loading.classList.add('active');
   try {
@@ -225,24 +234,15 @@ async function startPlan(){
     if(!full) throw new Error('AI返回为空');
     document.getElementById('resultContent').innerHTML = window.marked ? marked.parse(full) : '<pre>' + full + '</pre>';
     document.getElementById('resultMeta').textContent = `${opts.from}→${opts.dest}·${opts.days}天·${opts.people.total}人·${opts.budget}元`;
-    useQuota(); loading.classList.remove('active'); result.classList.add('active'); result.scrollIntoView({ behavior: 'smooth' });
+    loading.classList.remove('active'); result.classList.add('active'); result.scrollIntoView({ behavior: 'smooth' });
   } catch(e) { loading.classList.remove('active'); if(e.name === 'AbortError') alert('请求超时，请重试'); else if(e.message.includes('服务器错误')) alert('服务器错误，请稍后重试'); else alert('生成失败，请检查网络'); }
   finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
 }
 
-function downloadPDF(){ const el = document.getElementById('resultContent'); html2pdf().set({ margin: [8,8,8,8], filename: '旅行方案_' + new Date().toLocaleDateString() + '.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(el).save(); }
-
-function showPayPage(){
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center';
-  div.innerHTML = `<div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px;width:90%;max-width:360px;text-align:center;position:relative"><button style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#fff" onclick="this.parentElement.parentElement.remove()">✕</button><h3 style="color:#fff;margin-bottom:8px">💎 付费升级</h3><p style="color:#f39c12;font-size:22px;font-weight:700">￥9.90 / 永久</p><p style="color:#a0a0b8;font-size:13px;margin:6px 0">无限次AI旅行规划 + PDF下载</p><div style="display:flex;gap:12px;justify-content:center;margin:12px 0"><div style="text-align:center"><p style="color:#aaa;font-size:11px">支付宝</p><img src="https://i.ibb.co/0yFnTKS0/IMG-7071.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px"></div><div style="text-align:center"><p style="color:#aaa;font-size:11px">微信</p><img src="https://i.ibb.co/6KHXJx8/IMG-7069.jpg" style="width:130px;height:130px;object-fit:contain;background:#fff;border-radius:8px;padding:4px"></div></div><p style="color:#e74c3c;font-size:11px;margin:4px 0">虚拟商品一经售出概不退款</p><p style="color:#fff;font-size:13px;margin:8px 0">付款后截屏发给 <span style="color:#2ecc71">wxid_xccoegiluvnr12</span> 获取激活码</p><p style="color:#a0a0b8;font-size:12px;margin:8px 0">已有激活码？</p><input type="text" id="activateCode" placeholder="输入激活码" maxlength="20" style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:14px;text-align:center;outline:none;margin-bottom:8px"><button class="btn-secondary" style="width:100%" onclick="activatePaid(document.getElementById('activateCode').value,'')">🔑 激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="exportActivation()">📤 导出激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="importActivation()">📥 导入激活</button><button class="btn-secondary" style="width:100%;margin-top:4px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>`;
-  document.body.appendChild(div);
+function downloadPDF(){
+  const el = document.getElementById('resultContent');
+  html2pdf().set({ margin: [8,8,8,8], filename: '旅行方案_' + new Date().toLocaleDateString() + '.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(el).save();
 }
-
-function exportActivation(){ const d = getData(); if(!d.paid){ alert('你还没有激活付费权限'); return; } const blob = new Blob([JSON.stringify({ paid: true, time: Date.now(), sign: btoa('valid_' + Date.now()).slice(0,12) })], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '旅行规划_激活备份.json'; a.click(); alert('✅ 备份文件有效期10分钟，请尽快导入新设备。'); }
-function importActivation(){ const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = e => { const f = e.target.files[0], r = new FileReader(); r.onload = ev => { try { const data = JSON.parse(ev.target.result); if(!data.time || Date.now() - data.time > 600000){ alert('备份文件已过期（超10分钟），请重新导出'); return; } if(data.paid && data.sign && data.sign.startsWith('dmFsaWRf')){ const d = getData(); d.paid = true; saveData(d); updateBadge(); alert('已导入！'); } else { alert('文件格式不对'); } } catch(e) { alert('文件格式不对'); } }; r.readAsText(f); }; input.click(); }
-
-updateBadge();
 </script>
 </body>
 </html>
