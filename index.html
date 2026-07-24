@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · AI Agent</title>
+  <title>旅行规划师 · 免费版</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -28,7 +28,7 @@
     .tag:hover{border-color:#4a9eff;color:#fff}
     .tag.selected{background:#4a9eff;border-color:#4a9eff;color:#fff}
     .people-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .people-row input{width:60px;text-align:center}
+    .people-row input{width:60px;text-align:center;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none}
     .people-row span{color:#b0b0c0;font-size:13px}
     .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg, #4a9eff, #6c5ce7);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s}
     .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(74,158,255,0.3)}
@@ -49,11 +49,7 @@
     .result-content ul,.result-content ol{padding-left:20px;margin:8px 0}
     .result-content li{margin:4px 0}
     .result-content strong{color:#ffd700}
-    .result-content table{width:100%;border-collapse:collapse;margin:12px 0}
-    .result-content th,.result-content td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}
-    .result-content th{background:rgba(74,158,255,0.2);color:#4a9eff}
     .tips{color:#888;font-size:12px;text-align:center;margin-top:8px}
-    .tips a{color:#4a9eff;text-decoration:none}
     .date-row{display:flex;gap:10px;align-items:center}
     .date-row input{flex:1}
     @media(max-width:600px){.form-grid{grid-template-columns:1fr}.header h1{font-size:22px}}
@@ -63,206 +59,256 @@
 <div class="container">
   <div class="header">
     <span class="emoji">🧳</span>
-    <h1>旅行规划师</h1>
-    <p>AI 为你生成专属旅行方案 · 支持下载 PDF</p>
+    <h1>旅行规划师 · 免费版</h1>
+    <p>四级联动选地点 · 智谱验证地名 · AI生成方案 · PDF下载</p>
   </div>
 
   <div class="card">
-    <div class="card-title">📋 填写旅行信息</div>
+    <div class="card-title">📋 目的地</div>
     <div class="form-grid">
-      <div class="form-group"><label>🏠 始发地</label><select id="from"><option value="">请选择</option></select></div>
-      <div class="form-group"><label>🌍 目的地</label><select id="destination"><option value="">请选择</option></select></div>
+      <div class="form-group"><label>🌏 国家/区域</label><select id="country" onchange="onCountryChange()"><option value="">请选择</option></select></div>
+      <div class="form-group"><label>🗺️ 省份/州</label><select id="province" onchange="onProvinceChange()"><option value="">请先选择国家</option></select></div>
+      <div class="form-group"><label>🏙️ 城市</label><select id="city" onchange="onCityChange()"><option value="">请先选择省份</option></select></div>
+      <div class="form-group"><label>📍 区/县（选填）</label><select id="district"><option value="">请先选择城市</option></select></div>
+      <div class="form-group full"><label>🎯 具体景点（自由输入，逗号分隔）</label><input type="text" id="spots" placeholder="如：故宫、长城、颐和园" maxlength="200"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 行程信息</div>
+    <div class="form-grid">
       <div class="form-group"><label>💰 预算（元，最低100）</label><input type="number" id="budget" placeholder="如：5000" min="100"></div>
       <div class="form-group"><label>📅 出发日期</label><div class="date-row"><input type="date" id="startDate"><span style="color:#a0a0b8">→</span><input type="date" id="endDate"></div><span style="color:#888;font-size:11px;margin-top:4px" id="dayCount">选择日期后自动计算天数</span></div>
       <div class="form-group full"><label>👥 出行人员</label><div class="people-row"><span>🧑 成人</span><input type="number" id="adults" value="1" min="0" max="20"><span>👶 小孩</span><input type="number" id="children" value="0" min="0" max="10"><span>👴 老人</span><input type="number" id="elders" value="0" min="0" max="10"></div></div>
-      <div class="form-group full"><label>🚄 城际交通偏好</label><div class="tag-group" id="cityTags"><span class="tag" data-val="高铁">🚄 高铁</span><span class="tag" data-val="飞机">✈️ 飞机</span><span class="tag" data-val="火车">🚂 火车</span><span class="tag" data-val="自驾">🚗 自驾</span><span class="tag" data-val="大巴">🚌 大巴</span></div></div>
-      <div class="form-group full"><label>🚕 景点间交通</label><div class="tag-group" id="localTags"><span class="tag" data-val="地铁">🚇 地铁</span><span class="tag" data-val="公交">🚌 公交</span><span class="tag" data-val="打车">🚕 打车</span><span class="tag" data-val="共享单车">🚲 共享单车</span><span class="tag" data-val="步行">🚶 步行</span><span class="tag" data-val="景区专线">🚐 景区专线</span></div></div>
+      <div class="form-group full"><label>🚄 城际交通</label><div class="tag-group" id="cityTags"><span class="tag" data-val="高铁">🚄 高铁</span><span class="tag" data-val="飞机">✈️ 飞机</span><span class="tag" data-val="火车">🚂 火车</span><span class="tag" data-val="自驾">🚗 自驾</span><span class="tag" data-val="大巴">🚌 大巴</span></div></div>
+      <div class="form-group full"><label>🚕 市内交通</label><div class="tag-group" id="localTags"><span class="tag" data-val="地铁">🚇 地铁</span><span class="tag" data-val="公交">🚌 公交</span><span class="tag" data-val="打车">🚕 打车</span><span class="tag" data-val="共享单车">🚲 共享单车</span><span class="tag" data-val="步行">🚶 步行</span><span class="tag" data-val="景区专线">🚐 景区专线</span></div></div>
       <div class="form-group full"><label>🎯 旅行偏好</label><div class="tag-group" id="prefTags"><span class="tag" data-val="美食">🍜 美食</span><span class="tag" data-val="拍照">📸 拍照</span><span class="tag" data-val="购物">🛍️ 购物</span><span class="tag" data-val="自然风光">🏔️ 自然风光</span><span class="tag" data-val="历史文化">🏛️ 历史文化</span><span class="tag" data-val="冒险">🧗 冒险</span><span class="tag" data-val="放松度假">🏖️ 放松度假</span><span class="tag" data-val="亲子">👶 亲子</span></div></div>
     </div>
     <button class="btn-primary" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在为你规划旅行方案……</div><p style="color:#666;font-size:12px;margin-top:6px">预计需要 10-20 秒</p></div>
+  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划……</div></div>
 
   <div class="result" id="result">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="justify-content:space-between"><span>📝 你的旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
+      <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:12px;color:#888" id="resultMeta"></span></div>
       <div class="result-content" id="resultContent"></div>
       <button class="btn-secondary" onclick="downloadPDF()">📄 下载 PDF</button>
       <button class="btn-secondary" onclick="window.location.reload()">🔄 重新规划</button>
     </div>
   </div>
 
-  <p class="tips">💡 AI 生成内容仅供参考，出行前请核实信息。</p>
+  <p class="tips">💡 AI 生成内容仅供参考，出行前请核实。</p>
 </div>
 
 <script>
-const ALL_CITIES = [
-  '北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安',
-  '石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','开封','南京','苏州','无锡','常州','南通','扬州','徐州','杭州','宁波','温州','绍兴','嘉兴','湖州','金华','舟山',
-  '合肥','黄山','芜湖','南昌','九江','景德镇','福州','厦门','泉州','武夷山','武汉','宜昌','长沙','张家界','岳阳','凤凰','珠海','佛山','东莞','中山','惠州','汕头','湛江',
-  '南宁','桂林','北海','柳州','海口','三亚','万宁','陵水','成都','绵阳','乐山','峨眉山','九寨沟','稻城','康定','贵阳','遵义','安顺','黄果树','昆明','大理','丽江','香格里拉','西双版纳','腾冲',
-  '香港','澳门','台北','高雄','台中','台南','花莲',
-  '东京','大阪','京都','札幌','首尔','釜山','济州','新加坡','曼谷','清迈','普吉','芭提雅','吉隆坡','槟城','马六甲','河内','胡志明市','岘港','暹粒','金边','仰光','马尼拉','长滩岛','雅加达','巴厘岛','马尔代夫','迪拜','阿布扎比','伊斯坦布尔',
-  '伦敦','曼彻斯特','爱丁堡','巴黎','尼斯','里昂','柏林','慕尼黑','法兰克福','罗马','米兰','威尼斯','佛罗伦萨','巴塞罗那','马德里','里斯本','阿姆斯特丹','布鲁塞尔','苏黎世','日内瓦','维也纳','布拉格','布达佩斯','莫斯科','圣彼得堡','雅典','圣托里尼',
-  '纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','波士顿','华盛顿','温哥华','多伦多','蒙特利尔','悉尼','墨尔本','布里斯班','黄金海岸','奥克兰','皇后镇','开罗','开普敦','约翰内斯堡','内罗毕','卡萨布兰卡'
-];
+// ==================== 完整数据 ====================
+const TRAVEL_DATA = {
+  "中国": {
+    "北京市": {"城区":["东城区","西城区","朝阳区","海淀区","丰台区","石景山区","通州区","大兴区","顺义区","昌平区","房山区","门头沟区","怀柔区","平谷区","密云区","延庆区"]},
+    "上海市": {"城区":["黄浦区","徐汇区","长宁区","静安区","普陀区","虹口区","杨浦区","浦东新区","闵行区","宝山区","嘉定区","松江区","青浦区","奉贤区","金山区","崇明区"]},
+    "广东省": {"广州市":["越秀区","天河区","白云区","番禺区","海珠区","荔湾区","黄埔区","南沙区","花都区","增城区","从化区"],"深圳市":["福田区","南山区","罗湖区","宝安区","龙岗区","龙华区","光明区","坪山区","盐田区"],"珠海市":["香洲区","斗门区","金湾区"],"佛山市":["禅城区","南海区","顺德区","三水区","高明区"],"东莞市":["莞城区","南城区","东城区","万江区"],"中山市":["石岐区","东区","西区","南区"],"惠州市":["惠城区","惠阳区","博罗县","惠东县"],"汕头市":["金平区","龙湖区","澄海区","濠江区","潮阳区","潮南区","南澳县"],"湛江市":["赤坎区","霞山区","坡头区","麻章区"],"江门市":["蓬江区","江海区","新会区","台山市","开平市","鹤山市","恩平市"],"肇庆市":["端州区","鼎湖区","高要区"],"茂名市":["茂南区","电白区"],"梅州市":["梅江区","梅县区"],"汕尾市":["城区"],"河源市":["源城区"],"阳江市":["江城区"],"清远市":["清城区","清新区"],"潮州市":["湘桥区"],"揭阳市":["榕城区"],"云浮市":["云城区"],"韶关市":["浈江区","武江区","曲江区"]},
+    "浙江省": {"杭州市":["上城区","拱墅区","西湖区","滨江区","萧山区","余杭区","临平区","钱塘区","富阳区","临安区","桐庐县","淳安县"],"宁波市":["海曙区","江北区","北仑区","镇海区","鄞州区","奉化区","余姚市","慈溪市","象山县","宁海县"],"温州市":["鹿城区","龙湾区","瓯海区","洞头区"],"绍兴市":["越城区","柯桥区","上虞区","诸暨市","嵊州市"],"嘉兴市":["南湖区","秀洲区"],"湖州市":["吴兴区","南浔区"],"金华市":["婺城区","金东区","义乌市","东阳市","永康市"],"衢州市":["柯城区","衢江区"],"舟山市":["定海区","普陀区"],"台州市":["椒江区","黄岩区","路桥区"],"丽水市":["莲都区"]},
+    "江苏省": {"南京市":["玄武区","秦淮区","建邺区","鼓楼区","浦口区","栖霞区","雨花台区","江宁区","六合区","溧水区","高淳区"],"苏州市":["姑苏区","虎丘区","吴中区","相城区","吴江区","常熟市","张家港市","昆山市","太仓市"],"无锡市":["梁溪区","锡山区","惠山区","滨湖区","新吴区","江阴市","宜兴市"],"常州市":["天宁区","钟楼区","新北区","武进区","金坛区","溧阳市"],"南通市":["崇川区","通州区","海门区"],"扬州市":["广陵区","邗江区","江都区"],"镇江市":["京口区","润州区","丹徒区"],"泰州市":["海陵区","高港区","姜堰区"],"盐城市":["亭湖区","盐都区"],"淮安市":["清江浦区","淮安区"],"连云港市":["连云区","海州区","赣榆区"],"徐州市":["鼓楼区","云龙区","贾汪区","泉山区","铜山区"],"宿迁市":["宿城区","宿豫区"]},
+    "四川省": {"成都市":["锦江区","青羊区","金牛区","武侯区","成华区","龙泉驿区","青白江区","新都区","温江区","双流区","郫都区","新津区"],"绵阳市":["涪城区","游仙区","安州区"],"德阳市":["旌阳区","罗江区"],"宜宾市":["翠屏区","南溪区","叙州区"],"泸州市":["江阳区","纳溪区","龙马潭区"],"南充市":["顺庆区","高坪区","嘉陵区"],"达州市":["通川区","达川区"],"乐山市":["市中区","沙湾区","五通桥区","金口河区","峨眉山市"],"眉山市":["东坡区","彭山区"],"遂宁市":["船山区","安居区"],"内江市":["市中区","东兴区"],"广安市":["广安区","前锋区"],"广元市":["利州区","昭化区","朝天区"],"雅安市":["雨城区","名山区"],"巴中市":["巴州区","恩阳区"],"资阳市":["雁江区"],"攀枝花市":["东区","西区","仁和区"],"自贡市":["自流井区","贡井区","大安区","沿滩区","荣县","富顺县"]},
+    "湖北省": {"武汉市":["江岸区","江汉区","硚口区","汉阳区","武昌区","青山区","洪山区","东西湖区","汉南区","蔡甸区","江夏区","黄陂区","新洲区"],"宜昌市":["西陵区","伍家岗区","点军区","猇亭区","夷陵区"],"襄阳市":["襄城区","樊城区","襄州区"],"荆州市":["沙市区","荆州区"],"黄石市":["黄石港区","西塞山区","下陆区","铁山区"],"十堰市":["茅箭区","张湾区","郧阳区"],"鄂州市":["梁子湖区","华容区","鄂城区"],"荆门市":["东宝区","掇刀区"],"孝感市":["孝南区"],"黄冈市":["黄州区"],"咸宁市":["咸安区"],"随州市":["曾都区"],"恩施州":["恩施市","利川市"]}
+  },
+  "日本": {
+    "东京都": {"城区":["新宿区","涩谷区","浅草","秋叶原","银座","迪士尼","晴空塔","筑地"]},
+    "大阪府": {"城区":["环球影城","道顿堀","大阪城","心斋桥","通天阁"]},
+    "京都府": {"城区":["清水寺","伏见稻荷","金阁寺","岚山","祇园","花见小路"]},
+    "北海道": {"城区":["札幌","小樽","函馆","富良野","登别","旭川"]},
+    "冲绳县": {"城区":["那霸","美丽海水族馆","首里城","万座毛","古宇利岛"]}
+  },
+  "泰国": {
+    "曼谷": {"城区":["大皇宫","暹罗广场","考山路","卧佛寺","水上市场"]},
+    "清迈": {"城区":["古城","素贴山","宁曼路","夜间动物园","大象营"]},
+    "普吉": {"城区":["芭东海滩","皮皮岛","攀牙湾","斯米兰"]}
+  },
+  "欧洲": {
+    "法国": {"巴黎":["埃菲尔铁塔","卢浮宫","凯旋门","凡尔赛宫","圣母院","蒙马特","塞纳河"]},
+    "英国": {"伦敦":["大本钟","大英博物馆","伦敦眼","塔桥","白金汉宫","海德公园"]},
+    "意大利": {"罗马":["斗兽场","许愿池","万神殿","梵蒂冈","西班牙广场"]}
+  }
+};
 
-(function initCitySelects(){
-  const fromSelect = document.getElementById('from');
-  const destSelect = document.getElementById('destination');
-  ALL_CITIES.forEach(city => {
-    fromSelect.add(new Option(city, city));
-    destSelect.add(new Option(city, city));
-  });
+// ==================== 四级联动 ====================
+(function init(){
+  const countrySelect = document.getElementById('country');
+  countrySelect.innerHTML = '<option value="">请选择国家/区域</option>';
+  Object.keys(TRAVEL_DATA).forEach(c => countrySelect.add(new Option(c, c)));
 })();
 
+function onCountryChange(){
+  const country = document.getElementById('country').value;
+  const provinceSelect = document.getElementById('province');
+  provinceSelect.innerHTML = '<option value="">请选择</option>';
+  document.getElementById('city').innerHTML = '<option value="">请先选择上级</option>';
+  document.getElementById('district').innerHTML = '<option value="">请先选择上级</option>';
+  if(country && TRAVEL_DATA[country]){
+    Object.keys(TRAVEL_DATA[country]).forEach(p => provinceSelect.add(new Option(p, p)));
+  }
+}
+
+function onProvinceChange(){
+  const country = document.getElementById('country').value;
+  const province = document.getElementById('province').value;
+  const citySelect = document.getElementById('city');
+  citySelect.innerHTML = '<option value="">请选择城市</option>';
+  document.getElementById('district').innerHTML = '<option value="">请先选择上级</option>';
+  if(country && province && TRAVEL_DATA[country][province]){
+    Object.keys(TRAVEL_DATA[country][province]).forEach(c => citySelect.add(new Option(c, c)));
+  }
+}
+
+function onCityChange(){
+  const country = document.getElementById('country').value;
+  const province = document.getElementById('province').value;
+  const city = document.getElementById('city').value;
+  const districtSelect = document.getElementById('district');
+  districtSelect.innerHTML = '<option value="">请选择区/县（选填）</option>';
+  if(country && province && city && TRAVEL_DATA[country][province][city]){
+    TRAVEL_DATA[country][province][city].forEach(d => districtSelect.add(new Option(d, d)));
+  }
+}
+
+// ==================== 标签 ====================
 document.querySelectorAll('.tag').forEach(tag => {
   tag.addEventListener('click', function(){ this.classList.toggle('selected'); });
 });
 
+// ==================== 日期 ====================
 (function(){
-  const start = document.getElementById('startDate');
-  const end = document.getElementById('endDate');
-  const dayCount = document.getElementById('dayCount');
-  function updateDays(){
+  const start = document.getElementById('startDate'), end = document.getElementById('endDate'), dc = document.getElementById('dayCount');
+  function update(){
     if(start.value && end.value){
-      const s = new Date(start.value), e = new Date(end.value);
-      const diff = Math.ceil((e.getTime() - s.getTime()) / 86400000);
-      if(diff > 0) dayCount.textContent = '共 ' + diff + ' 天';
-      else { dayCount.textContent = '日期范围不正确'; end.value = ''; }
+      const diff = Math.ceil((new Date(end.value)-new Date(start.value))/86400000);
+      dc.textContent = diff > 0 ? '共 '+diff+' 天' : '日期范围不正确';
+      if(diff <= 0) end.value = '';
     }
   }
-  start.addEventListener('change', updateDays);
-  end.addEventListener('change', updateDays);
+  start.addEventListener('change', update);
+  end.addEventListener('change', update);
 })();
 
+// ==================== 验证 ====================
 function validateForm(){
-  const from = document.getElementById('from').value;
-  const dest = document.getElementById('destination').value;
+  const country = document.getElementById('country').value;
+  const city = document.getElementById('city').value;
   const budget = parseFloat(document.getElementById('budget').value);
   const start = document.getElementById('startDate').value;
   const end = document.getElementById('endDate').value;
-  const adults = parseInt(document.getElementById('adults').value) || 0;
+  const adults = parseInt(document.getElementById('adults').value)||0;
   const total = adults + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0);
-  if(!from || !dest) return '请选择始发地和目的地';
-  if(from === dest) return '始发地和目的地不能相同';
-  if(!budget || budget < 100) return '预算至少为100元';
-  if(!start || !end) return '请选择出发和返程日期';
+  if(!country || !city) return '请选择国家和城市';
+  if(!budget || budget < 100) return '预算至少100元';
+  if(!start || !end) return '请选择日期';
   if(new Date(start) < new Date(new Date().toDateString())) return '出发日期不能是过去';
-  if(total === 0) return '请至少添加1位出行人员';
+  if(total === 0) return '请至少添加1人';
   return null;
 }
 
-function getSelected(containerId){
-  const result = [];
-  document.querySelectorAll('#' + containerId + ' .tag.selected').forEach(t => result.push(t.dataset.val));
-  return result;
-}
+function getSelected(id){ const r=[]; document.querySelectorAll('#'+id+' .tag.selected').forEach(t=>r.push(t.dataset.val)); return r; }
 
-function getOptions(){
-  return {
-    from: document.getElementById('from').value,
-    destination: document.getElementById('destination').value,
-    budget: parseFloat(document.getElementById('budget').value) || 0,
-    days: parseInt(document.getElementById('dayCount').textContent) || 0,
-    startDate: document.getElementById('startDate').value,
-    endDate: document.getElementById('endDate').value,
-    people: {
-      adults: parseInt(document.getElementById('adults').value) || 0,
-      children: parseInt(document.getElementById('children').value) || 0,
-      elders: parseInt(document.getElementById('elders').value) || 0,
-      total: (parseInt(document.getElementById('adults').value)||0) + (parseInt(document.getElementById('children').value)||0) + (parseInt(document.getElementById('elders').value)||0)
-    },
-    cityVehicles: getSelected('cityTags'),
-    localVehicles: getSelected('localTags'),
-    preferences: getSelected('prefTags')
-  };
-}
+async function startPlan(){
+  const err = validateForm(); if(err){ alert(err); return; }
+  const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
+  btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
 
-async function callAI(options){
-  const API_URL = 'https://51ai-1.pages.dev/api/proxy';
-  const systemPrompt = `你是资深旅行规划师。请根据以下结构化信息，生成一份完整、详细、可执行的旅行方案。
+  try {
+    const country = document.getElementById('country').value;
+    const province = document.getElementById('province').value;
+    const city = document.getElementById('city').value;
+    const district = document.getElementById('district').value;
+    const spots = document.getElementById('spots').value.trim();
+    const budget = parseFloat(document.getElementById('budget').value)||0;
+    const days = parseInt(document.getElementById('dayCount').textContent)||0;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const adults = parseInt(document.getElementById('adults').value)||0;
+    const children = parseInt(document.getElementById('children').value)||0;
+    const elders = parseInt(document.getElementById('elders').value)||0;
+    const totalPeople = adults+children+elders;
+    const cityVehicles = getSelected('cityTags');
+    const localVehicles = getSelected('localTags');
+    const preferences = getSelected('prefTags');
 
-【基本信息】
-始发地：${options.from}
-目的地：${options.destination}
-预算：${options.budget}元
-天数：${options.days}天
-人数：成人${options.people.adults}人、小孩${options.people.children}人、老人${options.people.elders}人
-日期：${options.startDate} 至 ${options.endDate}
-城际交通偏好：${options.cityVehicles.join('、') || '不限'}
-景点间交通偏好：${options.localVehicles.join('、') || '不限'}
-旅行偏好：${options.preferences.join('、') || '无特殊偏好'}
+    // 拼目的地
+    let destination = country;
+    if(province) destination += '·' + province;
+    destination += '·' + city;
+    if(district) destination += '·' + district;
+    if(spots) destination += '（想去：' + spots + '）';
 
-【输出要求】
-请严格按照以下结构输出完整Markdown方案：
+    // ===== 智谱验证地名合法性 =====
+    const verifyPrompt = `请判断以下地名组合是否真实存在、是否合理。只回复"合法"或"不合法"。
+国家：${country}
+省份/州：${province || '无'}
+城市：${city}
+区/县：${district || '无'}
+景点：${spots || '无'}
+判断标准：国家和城市必须真实存在。省份和区县如果填写了，必须是该城市真实存在的行政区划。景点如果填写了，必须是该城市真实存在的景点。如果合理回复"合法"，否则回复"不合法"。`;
 
-## 🚄 城际交通（${options.from} → ${options.destination}）
-推荐具体车次或航班（含车次号/航班号、出发到达时间、耗时、参考票价），至少列出2-3个选项。
+    const verifyRes = await fetch('https://51ai-1.pages.dev/api/proxy', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'glm-4-flash',
+        messages: [{ role: 'system', content: verifyPrompt }, { role: 'user', content: '请判断。' }],
+        temperature: 0.1, max_tokens: 10, stream: false
+      })
+    });
+    const verifyData = await verifyRes.json();
+    const verifyResult = verifyData.choices?.[0]?.message?.content?.trim() || '合法';
 
-## 🚕 景点间交通
-结合当地实际情况，推荐每天景点之间的接驳方式（地铁、公交、打车、共享单车、步行等）。
+    if(verifyResult.includes('不合法')){
+      loading.classList.remove('active');
+      btn.disabled = false; btn.textContent = '✨ 开始规划';
+      alert('⚠️ 智谱检测到地名可能不合法，请检查后重试。\n\n国家：'+country+'\n城市：'+city+(spots?'\n景点：'+spots:''));
+      return;
+    }
 
-## 📅 每日详细行程
-按天排列，每天包含：上午、中午、下午、晚上的具体安排，标注景点名称、餐厅推荐、交通方式、预估费用。
+    // ===== AI规划 =====
+    const systemPrompt = `你是资深旅行规划师。请为以下目的地生成完整旅行方案。
 
-## 💰 预算分配表
-用表格列出各项费用：交通、住宿、餐饮、门票、购物、其他。总预算：${options.budget}元。
+目的地：${destination}
+预算：${budget}元 | 天数：${days}天
+人数：成人${adults}人、小孩${children}人、老人${elders}人
+日期：${startDate} 至 ${endDate}
+城际交通：${cityVehicles.join('、') || '不限'}
+市内交通：${localVehicles.join('、') || '不限'}
+偏好：${preferences.join('、') || '无'}
 
-## ⚠️ 注意事项
-列出目的地的重要提示：安全、礼仪、天气、货币、签证等。
+请输出Markdown：🚄城际交通、🚕市内交通、📅每日行程、💰预算分配、⚠️注意事项、🎒必备物品。`;
 
-## 🎒 必备物品清单
-列出适合打印的CheckList格式。
+    const planRes = await fetch('https://51ai-1.pages.dev/api/proxy', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'deepseek-v4-flash',
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: '请规划。' }],
+        temperature: 0.7, max_tokens: 3000, stream: false
+      })
+    });
+    const planData = await planRes.json();
+    if(planData.error) throw new Error(planData.error);
+    const md = planData.choices[0].message.content;
 
-请确保所有推荐都是具体、可执行的，不要写空洞的建议。`;
-
-  const userMessage = `请为我从${options.from}到${options.destination}的${options.days}天旅行生成完整方案。`;
-
-  const res = await fetch(API_URL, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'deepseek-v4-flash',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      temperature: 0.7, max_tokens: 3000, stream: false
-    })
-  });
-  const data = await res.json();
-  if(data.error) throw new Error(data.error);
-  return data.choices[0].message.content;
-}
-
-function renderMarkdown(md){
-  document.getElementById('resultContent').innerHTML = window.marked ? marked.parse(md) : '<pre>'+md+'</pre>';
+    document.getElementById('resultContent').innerHTML = marked.parse(md);
+    document.getElementById('resultMeta').textContent = `${destination} · ${days}天 · ${totalPeople}人 · ${budget}元`;
+    loading.classList.remove('active'); result.classList.add('active');
+    result.scrollIntoView({ behavior:'smooth' });
+  } catch(e){
+    loading.classList.remove('active');
+    alert('生成失败：' + (e.message || '网络错误'));
+  }
+  finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
 }
 
 function downloadPDF(){
   const el = document.getElementById('resultContent');
   const origBg = el.style.background, origColor = el.style.color;
   el.style.background = '#fff'; el.style.color = '#333';
-  html2pdf().set({margin:[10,10,10,10], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background=origBg;el.style.color=origColor;});
+  html2pdf().set({margin:[10,10,10,10], filename:'旅行方案.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background=origBg;el.style.color=origColor;});
 }
-
-async function startPlan(){
-  const err = validateForm(); if(err){ alert(err); return; }
-  const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
-  btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
-  try {
-    const opts = getOptions();
-    const md = await callAI(opts);
-    renderMarkdown(md);
-    document.getElementById('resultMeta').textContent = `${opts.from} → ${opts.destination} · ${opts.days}天 · ${opts.people.total}人 · ${opts.budget}元`;
-    loading.classList.remove('active'); result.classList.add('active');
-    result.scrollIntoView({ behavior: 'smooth' });
-  } catch(e) { loading.classList.remove('active'); alert('生成失败：' + (e.message || '网络错误，请重试')); }
-  finally { btn.disabled = false; btn.textContent = '✨ 重新规划'; }
-}
-
-document.addEventListener('keypress', e => { if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); startPlan(); } });
 </script>
 </body>
 </html>
