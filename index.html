@@ -3,57 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · AI Agent v3.0</title>
+  <title>旅行规划师 · AI Agent v3.1</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif}
-    body{background:#0f0f0f;min-height:100vh;display:flex;justify-content:center;padding:16px}
+    body{background:linear-gradient(160deg, #0f1123 0%, #1a1d35 40%, #252845 100%);min-height:100vh;display:flex;justify-content:center;padding:16px}
     .container{width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px}
-    .header{padding:20px 0 8px}
-    .header h1{color:#f5f5f5;font-size:22px;font-weight:600;letter-spacing:-0.3px}
-    .header p{color:#888;font-size:13px;margin-top:4px}
-    .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:20px}
-    .card-title{color:#e0e0e0;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+    .header{padding:20px 0 8px;text-align:center}
+    .header h1{color:#e8e8f0;font-size:24px;font-weight:700;letter-spacing:-0.5px}
+    .header p{color:#8888a0;font-size:13px;margin-top:4px}
+    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;backdrop-filter:blur(12px)}
+    .card-title{color:#d0d0e0;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .row>*{flex:1;min-width:140px}
     .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-    .field label{color:#999;font-size:12px;font-weight:500}
-    .field input,.field select{width:100%;padding:11px 13px;background:#141414;border:1px solid #2a2a2a;border-radius:10px;color:#f0f0f0;font-size:13px;outline:none;transition:all 0.15s}
-    .field input:focus,.field select:focus{border-color:#5b9bd5;background:#1a1a1a}
-    .field select option{background:#1a1a1a;color:#f0f0f0}
+    .field label{color:#9999b0;font-size:12px;font-weight:500}
+    .field input,.field select{width:100%;padding:11px 13px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;font-size:13px;outline:none;transition:all 0.2s}
+    .field input:focus,.field select:focus{border-color:#5b9bd5;background:rgba(255,255,255,0.08);box-shadow:0 0 0 3px rgba(91,155,213,0.1)}
+    .field select option{background:#1a1d35;color:#e8e8f0}
     .field input::placeholder{color:#555}
     .hint{color:#666;font-size:11px;margin-top:3px}
     .chip-group{display:flex;flex-wrap:wrap;gap:6px}
-    .chip{padding:7px 14px;background:#141414;border:1px solid #2a2a2a;border-radius:18px;color:#999;font-size:12px;cursor:pointer;transition:all 0.15s;user-select:none}
+    .chip{padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:18px;color:#9999b0;font-size:12px;cursor:pointer;transition:all 0.2s;user-select:none}
     .chip:hover{border-color:#5b9bd5;color:#ccc}
-    .chip.active{background:#5b9bd5;border-color:#5b9bd5;color:#fff}
-    .btn{width:100%;padding:13px;background:#5b9bd5;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
-    .btn:hover:not(:disabled){background:#4a8ac4}
-    .btn:disabled{opacity:0.4;cursor:not-allowed}
-    .btn-outline{background:transparent;border:1px solid #333;color:#ccc;margin-top:8px}
-    .btn-outline:hover{background:#1a1a1a}
+    .chip.active{background:rgba(91,155,213,0.2);border-color:#5b9bd5;color:#fff}
+    .btn{width:100%;padding:13px;background:linear-gradient(135deg, #5b9bd5, #4a7fc4);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,155,213,0.25)}
+    .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#ccc;margin-top:8px}
+    .btn-outline:hover{background:rgba(255,255,255,0.04)}
     .loading{display:none;text-align:center;padding:32px}
     .loading.active{display:block}
-    .spinner{width:32px;height:32px;border:2px solid #2a2a2a;border-top-color:#5b9bd5;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
+    .spinner{width:32px;height:32px;border:2px solid rgba(255,255,255,0.1);border-top-color:#5b9bd5;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
     @keyframes spin{to{transform:rotate(360deg)}}
     .loading-text{color:#888;font-size:13px}
     .result{display:none}
     .result.active{display:block}
-    .result-content{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:24px;color:#e0e0e0;line-height:1.7;font-size:13px}
-    .result-content h1{color:#5b9bd5;font-size:20px;margin:16px 0 10px;border-bottom:1px solid #2a2a2a;padding-bottom:6px}
+    .result-content{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;color:#d0d0e0;line-height:1.7;font-size:13px}
+    .result-content h1{color:#5b9bd5;font-size:20px;margin:16px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}
     .result-content h2{color:#7bb5e0;font-size:16px;margin:14px 0 8px}
-    .result-content h3{color:#999;font-size:14px;margin:10px 0 6px}
+    .result-content h3{color:#9999b0;font-size:14px;margin:10px 0 6px}
     .result-content ul,.result-content ol{padding-left:18px;margin:6px 0}
     .result-content li{margin:3px 0}
     .result-content strong{color:#f0c060}
     .result-content table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
-    .result-content th,.result-content td{border:1px solid #2a2a2a;padding:7px 10px;text-align:left}
-    .result-content th{background:rgba(91,155,213,0.15);color:#5b9bd5}
+    .result-content th,.result-content td{border:1px solid rgba(255,255,255,0.08);padding:7px 10px;text-align:left}
+    .result-content th{background:rgba(91,155,213,0.12);color:#5b9bd5}
     .footer-text{color:#555;font-size:11px;text-align:center;margin-top:8px}
     .validate-badge{display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;margin-left:6px}
     .validate-badge.ok{background:rgba(46,204,113,0.15);color:#2ecc71}
     .validate-badge.fail{background:rgba(231,76,60,0.15);color:#e74c3c}
+    .validate-badge.checking{background:rgba(241,196,15,0.15);color:#f1c40f}
     @media(max-width:480px){.row>*{min-width:100%}}
   </style>
 </head>
@@ -61,44 +62,40 @@
 <div class="container">
   <div class="header">
     <h1>🧳 旅行规划师</h1>
-    <p>省→市→区 · 景点自填 · 寒暑假识别 · 完整方案</p>
+    <p>自由输入目的地 · AI验证地名 · 完整旅行方案</p>
   </div>
 
   <div class="card">
-    <div class="card-title">📍 目的地选择</div>
+    <div class="card-title">📍 目的地（自由输入）</div>
     
-    <!-- 出发地 -->
     <div class="row">
       <div class="field">
-        <label>🏠 出发省份</label>
-        <select id="fromProvince" onchange="updateCities('from')"><option value="">选择省份</option></select>
+        <label>🏠 出发省份（选填）</label>
+        <input type="text" id="fromProvince" placeholder="如：山东" maxlength="20">
       </div>
       <div class="field">
         <label>🏙️ 出发城市</label>
-        <select id="fromCity" onchange="updateDistricts('from')"><option value="">先选省份</option></select>
+        <input type="text" id="fromCity" placeholder="如：淄博" maxlength="30">
       </div>
     </div>
     
-    <!-- 目的地 -->
     <div class="row">
       <div class="field">
-        <label>🌍 目的省份</label>
-        <select id="toProvince" onchange="updateCities('to')"><option value="">选择省份</option></select>
+        <label>🌍 目的省份（选填）</label>
+        <input type="text" id="toProvince" placeholder="如：四川" maxlength="20">
       </div>
       <div class="field">
         <label>🏙️ 目的城市</label>
-        <select id="toCity" onchange="updateDistricts('to')"><option value="">先选省份</option></select>
+        <input type="text" id="toCity" placeholder="如：成都" maxlength="30">
       </div>
     </div>
 
-    <!-- 景点自填 -->
     <div class="field">
       <label>🎯 想去的景点（选填，逗号分隔）</label>
-      <input type="text" id="spots" placeholder="如：西湖、灵隐寺、雷峰塔" maxlength="200">
+      <input type="text" id="spots" placeholder="如：宽窄巷子、大熊猫基地、都江堰" maxlength="200">
       <span class="hint">不知道有什么景点？留空让AI帮你推荐</span>
     </div>
 
-    <!-- 预算和日期 -->
     <div class="row">
       <div class="field">
         <label>💰 预算（元）</label>
@@ -122,7 +119,6 @@
     </div>
     <span class="hint" id="seasonHint" style="display:block;margin-top:-8px"></span>
 
-    <!-- 偏好 -->
     <div class="field">
       <label>🎯 旅行偏好</label>
       <div class="chip-group" id="prefChips">
@@ -140,11 +136,11 @@
     <button class="btn" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
     <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
       <span style="color:#666;font-size:11px">地名验证：</span>
-      <span class="validate-badge" id="validateStatus">待验证</span>
+      <span class="validate-badge" id="validateStatus">等待输入</span>
     </div>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划……</div></div>
+  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划旅行方案……</div></div>
 
   <div class="result" id="result">
     <div class="card" style="margin-bottom:0">
@@ -155,95 +151,16 @@
     </div>
   </div>
 
-  <p class="footer-text">AI 生成仅供参考 · 出行前请核实 · 地名自动校验</p>
+  <p class="footer-text">AI 生成仅供参考 · 出行前请核实信息</p>
 </div>
 
 <script>
-// ==================== 中国省市区数据（精简版） ====================
-const regionData = {
-  '北京': { cities: ['北京'], districts: { '北京': ['东城区','西城区','朝阳区','海淀区','丰台区','石景山区','通州区','大兴区'] } },
-  '上海': { cities: ['上海'], districts: { '上海': ['黄浦区','徐汇区','长宁区','静安区','普陀区','虹口区','杨浦区','浦东新区','闵行区'] } },
-  '广东': { cities: ['广州','深圳','珠海','佛山','东莞','中山','惠州','汕头','湛江','肇庆'], districts: { '广州':['天河区','越秀区','海珠区','白云区','番禺区'], '深圳':['南山区','福田区','罗湖区','宝安区','龙岗区'] } },
-  '浙江': { cities: ['杭州','宁波','温州','绍兴','嘉兴','湖州','金华','舟山'], districts: { '杭州':['西湖区','上城区','拱墅区','滨江区','余杭区'], '宁波':['海曙区','江北区','鄞州区','镇海区'] } },
-  '江苏': { cities: ['南京','苏州','无锡','常州','南通','扬州','徐州','镇江'], districts: { '南京':['玄武区','秦淮区','建邺区','鼓楼区','栖霞区'], '苏州':['姑苏区','虎丘区','吴中区','相城区','吴江区'] } },
-  '四川': { cities: ['成都','绵阳','乐山','峨眉山','九寨沟','稻城','康定'], districts: { '成都':['锦江区','武侯区','青羊区','金牛区','成华区'] } },
-  '云南': { cities: ['昆明','大理','丽江','香格里拉','西双版纳','腾冲'], districts: { '昆明':['五华区','盘龙区','官渡区','西山区'], '大理':['大理市','洱源县','剑川县'] } },
-  '湖南': { cities: ['长沙','张家界','岳阳','凤凰'], districts: { '长沙':['岳麓区','芙蓉区','天心区','开福区','雨花区'] } },
-  '湖北': { cities: ['武汉','宜昌'], districts: { '武汉':['武昌区','汉口区','汉阳区','洪山区'] } },
-  '陕西': { cities: ['西安'], districts: { '西安':['雁塔区','碑林区','未央区','莲湖区','新城区'] } },
-  '山东': { cities: ['济南','青岛','烟台','威海'], districts: { '济南':['历下区','市中区','槐荫区','天桥区'], '青岛':['市南区','市北区','崂山区','黄岛区'] } },
-  '福建': { cities: ['福州','厦门','泉州','武夷山'], districts: { '福州':['鼓楼区','台江区','仓山区','晋安区'], '厦门':['思明区','湖里区','集美区'] } },
-  '广西': { cities: ['南宁','桂林','北海','柳州'], districts: { '南宁':['青秀区','兴宁区','江南区','西乡塘区'], '桂林':['秀峰区','象山区','七星区'] } },
-  '海南': { cities: ['海口','三亚','万宁','陵水'], districts: { '海口':['龙华区','美兰区','琼山区'], '三亚':['吉阳区','天涯区','海棠区'] } },
-  '重庆': { cities: ['重庆'], districts: { '重庆':['渝中区','江北区','南岸区','沙坪坝区','九龙坡区'] } },
-  '天津': { cities: ['天津'], districts: { '天津':['和平区','河东区','河西区','南开区','河北区'] } },
-  '贵州': { cities: ['贵阳','遵义','安顺','黄果树'], districts: { '贵阳':['南明区','云岩区','花溪区','乌当区'] } },
-  '河南': { cities: ['郑州','洛阳','开封'], districts: { '郑州':['金水区','二七区','中原区','管城回族区'] } },
-  '河北': { cities: ['石家庄'], districts: { '石家庄':['长安区','桥西区','新华区','裕华区'] } },
-  '辽宁': { cities: ['沈阳','大连'], districts: { '沈阳':['和平区','沈河区','铁西区','皇姑区'], '大连':['中山区','西岗区','沙河口区','甘井子区'] } },
-  '安徽': { cities: ['合肥','黄山','芜湖'], districts: { '合肥':['蜀山区','包河区','庐阳区','瑶海区'] } },
-  '江西': { cities: ['南昌','九江','景德镇'], districts: { '南昌':['东湖区','西湖区','青云谱区'] } },
-  '香港': { cities: ['香港'], districts: { '香港':['中西区','湾仔区','东区','南区','油尖旺区'] } },
-  '澳门': { cities: ['澳门'], districts: { '澳门':['澳门半岛','氹仔','路环'] } },
-  '台湾': { cities: ['台北','高雄','台中','台南','花莲'], districts: { '台北':['信义区','大安区','中山区','松山区'] } },
-  '日本': { cities: ['东京','大阪','京都','札幌'], districts: { '东京':['新宿区','涩谷区','浅草','秋叶原'], '大阪':['心斋桥','梅田','难波'] } },
-  '泰国': { cities: ['曼谷','清迈','普吉','芭提雅'], districts: { '曼谷':['素坤逸','是隆','考山路'], '清迈':['古城','宁曼路'] } },
-  '韩国': { cities: ['首尔','釜山','济州'], districts: { '首尔':['明洞','弘大','江南','梨泰院'] } },
-  '新加坡': { cities: ['新加坡'], districts: { '新加坡':['滨海湾','乌节路','圣淘沙','牛车水'] } },
-  '马来西亚': { cities: ['吉隆坡','槟城','马六甲'], districts: { '吉隆坡':['双子塔区','武吉免登','茨厂街'] } },
-  '法国': { cities: ['巴黎','尼斯','里昂'], districts: { '巴黎':['卢浮宫区','蒙马特','拉丁区','埃菲尔铁塔区'] } },
-  '意大利': { cities: ['罗马','米兰','威尼斯','佛罗伦萨'], districts: { '罗马':['古城区','梵蒂冈区','特拉斯提弗列'] } },
-  '美国': { cities: ['纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥'], districts: { '纽约':['曼哈顿','布鲁克林','皇后区'] } },
-  '阿联酋': { cities: ['迪拜','阿布扎比'], districts: { '迪拜':['迪拜码头','市中心','棕榈岛'] } }
-};
-
-// 初始化省份下拉框
-(function initProvinces(){
-  const provinces = Object.keys(regionData);
-  const fromProv = document.getElementById('fromProvince');
-  const toProv = document.getElementById('toProvince');
-  provinces.forEach(p => {
-    fromProv.add(new Option(p, p));
-    toProv.add(new Option(p, p));
-  });
-})();
-
-function updateCities(type){
-  const provId = type === 'from' ? 'fromProvince' : 'toProvince';
-  const cityId = type === 'from' ? 'fromCity' : 'toCity';
-  const distId = type === 'from' ? 'fromDistrict' : 'toDistrict';
-  
-  const province = document.getElementById(provId).value;
-  const citySelect = document.getElementById(cityId);
-  
-  citySelect.innerHTML = '<option value="">选择城市</option>';
-  
-  if(province && regionData[province]){
-    const cities = regionData[province].cities || [];
-    cities.forEach(c => citySelect.add(new Option(c, c)));
-  }
-}
-
-function updateDistricts(type){
-  const provId = type === 'from' ? 'fromProvince' : 'toProvince';
-  const cityId = type === 'from' ? 'fromCity' : 'toCity';
-  
-  const province = document.getElementById(provId).value;
-  const city = document.getElementById(cityId).value;
-  
-  if(province && city && regionData[province]?.districts?.[city]){
-    // 区县数据已加载，这里只做标记
-    document.getElementById('validateStatus').textContent = '地名有效';
-    document.getElementById('validateStatus').className = 'validate-badge ok';
-  }
-}
-
-// 芯片选择
+// ==================== 芯片选择 ====================
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', function(){ this.classList.toggle('active'); });
 });
 
-// 日期联动 + 寒暑假判断
+// ==================== 日期联动 + 寒暑假判断 ====================
 (function(){
   const start = document.getElementById('startDate');
   const end = document.getElementById('endDate');
@@ -255,10 +172,11 @@ document.querySelectorAll('.chip').forEach(chip => {
       const m = d.getMonth() + 1;
       const day = d.getDate();
       
-      if(m === 1 || m === 2) hint.textContent = '❄️ 寒假出行 · 注意保暖 · 热门旅游季';
+      if(m === 1 || m === 2) hint.textContent = '❄️ 寒假出行 · 热门旅游季 · 注意保暖';
       else if(m >= 7 && m <= 8) hint.textContent = '☀️ 暑假出行 · 游客较多 · 建议提前订票';
       else if(m === 9 && day <= 10) hint.textContent = '📚 开学季 · 游客减少 · 适合错峰出行';
       else if((m >= 3 && m <= 5) || (m >= 9 && m <= 11)) hint.textContent = '🌸 春秋季 · 最佳旅行季节';
+      else if(m === 12 && day >= 20) hint.textContent = '🎄 圣诞元旦 · 热门旅游季';
       else hint.textContent = '';
     }
   }
@@ -267,24 +185,10 @@ document.querySelectorAll('.chip').forEach(chip => {
   end.addEventListener('change', updateSeason);
 })();
 
-// ==================== 地名校验（智谱免费检查） ====================
-async function validateLocation(fromCity, toCity){
-  // 先用本地数据检查
-  let fromValid = false, toValid = false;
-  
-  for(const [prov, data] of Object.entries(regionData)){
-    if(data.cities?.includes(fromCity)) fromValid = true;
-    if(data.cities?.includes(toCity)) toValid = true;
-  }
-  
-  if(fromValid && toValid){
-    document.getElementById('validateStatus').textContent = '地名有效';
-    document.getElementById('validateStatus').className = 'validate-badge ok';
-    return true;
-  }
-  
-  // 本地没找到，用智谱检查（免费模型）
+// ==================== 地名校验（智谱GLM-4-Flash） ====================
+async function validateLocation(cityName){
   document.getElementById('validateStatus').textContent = '验证中...';
+  document.getElementById('validateStatus').className = 'validate-badge checking';
   
   try {
     const checkRes = await fetch('https://51ai-1.pages.dev/api/proxy', {
@@ -292,19 +196,19 @@ async function validateLocation(fromCity, toCity){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'glm-4-flash',
-        messages: [{ role: 'user', content: `"${fromCity}"和"${toCity}"是真实存在的中国或国外城市吗？只回答"是"或"否，因为XXX"。` }],
+        messages: [{ role: 'user', content: `"${cityName}"是一个真实存在的中国城市或国外城市吗？只回答"是"或"否，因为XXX"。` }],
         temperature: 0.1, max_tokens: 30, stream: false
       })
     });
     const checkData = await checkRes.json();
     const answer = checkData.choices?.[0]?.message?.content || '';
     
-    if(answer.includes('是')){
-      document.getElementById('validateStatus').textContent = '地名有效';
+    if(answer.includes('是') || answer.includes('存在') || answer.includes('真实')){
+      document.getElementById('validateStatus').textContent = '✓ 地名有效';
       document.getElementById('validateStatus').className = 'validate-badge ok';
       return true;
     } else {
-      document.getElementById('validateStatus').textContent = '地名存疑';
+      document.getElementById('validateStatus').textContent = '⚠ 地名存疑';
       document.getElementById('validateStatus').className = 'validate-badge fail';
       return false;
     }
@@ -317,35 +221,41 @@ async function validateLocation(fromCity, toCity){
 
 // ==================== 主规划流程 ====================
 async function startPlan(){
-  const fromCity = document.getElementById('fromCity').value;
-  const toCity = document.getElementById('toCity').value;
+  const fromCity = document.getElementById('fromCity').value.trim();
+  const toCity = document.getElementById('toCity').value.trim();
+  const fromProvince = document.getElementById('fromProvince').value.trim();
+  const toProvince = document.getElementById('toProvince').value.trim();
   const budget = parseFloat(document.getElementById('budget').value);
   const people = parseInt(document.getElementById('people').value);
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
   const spots = document.getElementById('spots').value.trim();
 
-  if(!fromCity || !toCity){ alert('请选择出发城市和目的城市'); return; }
+  if(!fromCity || !toCity){ alert('请填写出发城市和目的城市（如：淄博、成都）'); return; }
   if(fromCity === toCity){ alert('出发地和目的地不能相同'); return; }
   if(!budget || budget < 100){ alert('预算至少100元'); return; }
   if(!startDate || !endDate){ alert('请选择日期'); return; }
   if(!people || people < 1){ alert('人数至少1人'); return; }
 
+  const days = Math.ceil((new Date(endDate)-new Date(startDate))/86400000);
+  if(days < 1){ alert('日期范围不正确'); return; }
+
   // 地名校验
-  const valid = await validateLocation(fromCity, toCity);
-  if(!valid && !confirm('地名可能不准确，是否继续规划？')) return;
+  const fromValid = await validateLocation(fromCity);
+  const toValid = await validateLocation(toCity);
+  if((!fromValid || !toValid) && !confirm('地名可能不准确（如：淄博、潍坊等小众城市AI可能判断存疑），是否继续规划？')) return;
 
   const prefs = [];
   document.querySelectorAll('#prefChips .chip.active').forEach(c => prefs.push(c.dataset.val));
-
-  const days = Math.ceil((new Date(endDate)-new Date(startDate))/86400000);
-  if(days < 1){ alert('日期范围不正确'); return; }
 
   const btn = document.getElementById('planBtn'), loading = document.getElementById('loading'), result = document.getElementById('result');
   btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
 
   try {
-    const systemPrompt = `你是资深旅行规划师。请为从${fromCity}到${toCity}的${days}天旅行生成完整方案。
+    const fromFull = fromProvince ? `${fromProvince}${fromCity}` : fromCity;
+    const toFull = toProvince ? `${toProvince}${toCity}` : toCity;
+
+    const systemPrompt = `你是资深旅行规划师。请为从${fromFull}到${toFull}的${days}天旅行生成完整方案。
 预算：${budget}元 | 人数：${people}人 | 偏好：${prefs.join('、')||'无'} | 日期：${startDate}至${endDate} | 想去的景点：${spots||'由AI推荐'}
 
 输出结构：
@@ -361,7 +271,7 @@ async function startPlan(){
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'deepseek-v4-flash',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `请生成${fromCity}到${toCity}的${days}天旅行方案。` }],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `请生成${fromFull}到${toFull}的${days}天旅行方案。` }],
         temperature: 0.7, max_tokens: 3000, stream: false
       })
     });
@@ -370,7 +280,7 @@ async function startPlan(){
     const md = data.choices[0].message.content;
 
     document.getElementById('resultContent').innerHTML = marked.parse(md);
-    document.getElementById('resultMeta').textContent = `${fromCity} → ${toCity} · ${days}天 · ${people}人 · ¥${budget}`;
+    document.getElementById('resultMeta').textContent = `${fromFull} → ${toFull} · ${days}天 · ${people}人 · ¥${budget}`;
     loading.classList.remove('active'); result.classList.add('active');
     result.scrollIntoView({ behavior:'smooth' });
   } catch(e){ loading.classList.remove('active'); alert('规划失败：' + (e.message||'请重试')); }
@@ -379,8 +289,9 @@ async function startPlan(){
 
 function downloadPDF(){
   const el = document.getElementById('resultContent');
+  const origBg = el.style.background, origColor = el.style.color;
   el.style.background = '#fff'; el.style.color = '#222';
-  html2pdf().set({margin:[8,8,8,8], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background='';el.style.color='';});
+  html2pdf().set({margin:[8,8,8,8], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background=origBg;el.style.color=origColor;});
 }
 </script>
 </body>
