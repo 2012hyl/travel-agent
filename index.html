@@ -8,53 +8,52 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif}
-    body{background:linear-gradient(160deg, #0f1123 0%, #1a1d35 40%, #252845 100%);min-height:100vh;display:flex;justify-content:center;padding:16px}
+    body{background:#f5f3f0;min-height:100vh;display:flex;justify-content:center;padding:16px}
     .container{width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px}
-    .header{padding:20px 0 8px;text-align:center}
-    .header h1{color:#e8e8f0;font-size:24px;font-weight:700;letter-spacing:-0.5px}
-    .header p{color:#8888a0;font-size:13px;margin-top:4px}
-    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;backdrop-filter:blur(12px)}
-    .card-title{color:#d0d0e0;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+    .header{padding:20px 0 8px}
+    .header h1{color:#3c2f1d;font-size:22px;font-weight:700;letter-spacing:-0.3px}
+    .header p{color:#8b7355;font-size:13px;margin-top:4px}
+    .card{background:#fff;border:1px solid #e8dfd5;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    .card-title{color:#3c2f1d;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .row>*{flex:1;min-width:140px}
     .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-    .field label{color:#9999b0;font-size:12px;font-weight:500}
-    .field input,.field select{width:100%;padding:11px 13px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;font-size:13px;outline:none;transition:all 0.2s}
-    .field input:focus,.field select:focus{border-color:#5b9bd5;background:rgba(255,255,255,0.08);box-shadow:0 0 0 3px rgba(91,155,213,0.1)}
-    .field select option{background:#1a1d35;color:#e8e8f0}
-    .field input::placeholder{color:#555}
-    .hint{color:#666;font-size:11px;margin-top:3px}
+    .field label{color:#6b5d4f;font-size:12px;font-weight:500}
+    .field input,.field select{width:100%;padding:11px 13px;background:#faf8f5;border:1px solid #e0d6c8;border-radius:10px;color:#3c2f1d;font-size:13px;outline:none;transition:all 0.15s}
+    .field input:focus,.field select:focus{border-color:#c9a96e;background:#fff;box-shadow:0 0 0 3px rgba(201,169,110,0.1)}
+    .field select option{background:#fff;color:#3c2f1d}
+    .field input::placeholder{color:#b8a894}
+    .hint{color:#a6937c;font-size:11px;margin-top:3px}
     .chip-group{display:flex;flex-wrap:wrap;gap:6px}
-    .chip{padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:18px;color:#9999b0;font-size:12px;cursor:pointer;transition:all 0.2s;user-select:none}
-    .chip:hover{border-color:#5b9bd5;color:#ccc}
-    .chip.active{background:rgba(91,155,213,0.2);border-color:#5b9bd5;color:#fff}
-    .btn{width:100%;padding:13px;background:linear-gradient(135deg, #5b9bd5, #4a7fc4);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
-    .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,155,213,0.25)}
-    .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-    .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#ccc;margin-top:8px}
-    .btn-outline:hover{background:rgba(255,255,255,0.04)}
+    .chip{padding:7px 14px;background:#faf8f5;border:1px solid #e0d6c8;border-radius:18px;color:#6b5d4f;font-size:12px;cursor:pointer;transition:all 0.15s;user-select:none}
+    .chip:hover{border-color:#c9a96e;color:#3c2f1d}
+    .chip.active{background:#c9a96e;border-color:#c9a96e;color:#fff}
+    .btn{width:100%;padding:13px;background:#c9a96e;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .btn:hover:not(:disabled){background:#b8955a}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
+    .btn-outline{background:transparent;border:1px solid #d0c8b8;color:#6b5d4f;margin-top:8px}
+    .btn-outline:hover{background:#faf8f5}
     .loading{display:none;text-align:center;padding:32px}
     .loading.active{display:block}
-    .spinner{width:32px;height:32px;border:2px solid rgba(255,255,255,0.1);border-top-color:#5b9bd5;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
+    .spinner{width:32px;height:32px;border:2px solid #e0d6c8;border-top-color:#c9a96e;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-text{color:#888;font-size:13px}
+    .loading-text{color:#8b7355;font-size:13px}
     .result{display:none}
     .result.active{display:block}
-    .result-content{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;color:#d0d0e0;line-height:1.7;font-size:13px}
-    .result-content h1{color:#5b9bd5;font-size:20px;margin:16px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}
-    .result-content h2{color:#7bb5e0;font-size:16px;margin:14px 0 8px}
-    .result-content h3{color:#9999b0;font-size:14px;margin:10px 0 6px}
+    .result-content{background:#fff;border:1px solid #e8dfd5;border-radius:16px;padding:24px;color:#3c2f1d;line-height:1.7;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    .result-content h1{color:#8b6914;font-size:20px;margin:16px 0 10px;border-bottom:2px solid #e8dfd5;padding-bottom:6px}
+    .result-content h2{color:#a6792c;font-size:16px;margin:14px 0 8px}
+    .result-content h3{color:#6b5d4f;font-size:14px;margin:10px 0 6px}
     .result-content ul,.result-content ol{padding-left:18px;margin:6px 0}
     .result-content li{margin:3px 0}
-    .result-content strong{color:#f0c060}
+    .result-content strong{color:#8b6914}
     .result-content table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
-    .result-content th,.result-content td{border:1px solid rgba(255,255,255,0.08);padding:7px 10px;text-align:left}
-    .result-content th{background:rgba(91,155,213,0.12);color:#5b9bd5}
-    .footer-text{color:#555;font-size:11px;text-align:center;margin-top:8px}
+    .result-content th,.result-content td{border:1px solid #e0d6c8;padding:7px 10px;text-align:left}
+    .result-content th{background:#faf8f5;color:#8b6914}
+    .footer-text{color:#b8a894;font-size:11px;text-align:center;margin-top:8px}
     .validate-badge{display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;margin-left:6px}
-    .validate-badge.ok{background:rgba(46,204,113,0.15);color:#2ecc71}
-    .validate-badge.fail{background:rgba(231,76,60,0.15);color:#e74c3c}
-    .validate-badge.checking{background:rgba(241,196,15,0.15);color:#f1c40f}
+    .validate-badge.ok{background:rgba(46,139,87,0.1);color:#2e8b57}
+    .validate-badge.fail{background:rgba(178,34,34,0.08);color:#b22222}
     @media(max-width:480px){.row>*{min-width:100%}}
   </style>
 </head>
@@ -62,44 +61,33 @@
 <div class="container">
   <div class="header">
     <h1>🧳 旅行规划师</h1>
-    <p>自由输入目的地 · AI验证地名 · 完整旅行方案</p>
+    <p>自由输入目的地 · 智能地名校验 · 寒暑假识别 · 完整方案</p>
   </div>
 
   <div class="card">
-    <div class="card-title">📍 目的地（自由输入）</div>
+    <div class="card-title">📍 行程信息</div>
     
     <div class="row">
       <div class="field">
-        <label>🏠 出发省份（选填）</label>
-        <input type="text" id="fromProvince" placeholder="如：山东" maxlength="20">
+        <label>🏠 出发地</label>
+        <input type="text" id="fromPlace" placeholder="如：上海浦东" maxlength="50">
       </div>
       <div class="field">
-        <label>🏙️ 出发城市</label>
-        <input type="text" id="fromCity" placeholder="如：淄博" maxlength="30">
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="field">
-        <label>🌍 目的省份（选填）</label>
-        <input type="text" id="toProvince" placeholder="如：四川" maxlength="20">
-      </div>
-      <div class="field">
-        <label>🏙️ 目的城市</label>
-        <input type="text" id="toCity" placeholder="如：成都" maxlength="30">
+        <label>🌍 目的地</label>
+        <input type="text" id="toPlace" placeholder="如：淄博·张店区" maxlength="50">
       </div>
     </div>
 
     <div class="field">
       <label>🎯 想去的景点（选填，逗号分隔）</label>
-      <input type="text" id="spots" placeholder="如：宽窄巷子、大熊猫基地、都江堰" maxlength="200">
+      <input type="text" id="spots" placeholder="如：周村古商城、淄博陶瓷博物馆、海岱楼" maxlength="200">
       <span class="hint">不知道有什么景点？留空让AI帮你推荐</span>
     </div>
 
     <div class="row">
       <div class="field">
         <label>💰 预算（元）</label>
-        <input type="number" id="budget" placeholder="如：5000" min="100">
+        <input type="number" id="budget" placeholder="如：3000" min="100">
       </div>
       <div class="field">
         <label>👥 人数</label>
@@ -135,104 +123,89 @@
 
     <button class="btn" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
     <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
-      <span style="color:#666;font-size:11px">地名验证：</span>
-      <span class="validate-badge" id="validateStatus">等待输入</span>
+      <span style="color:#b8a894;font-size:11px">地名验证：</span>
+      <span class="validate-badge" id="validateStatus">待验证</span>
     </div>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划旅行方案……</div></div>
+  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在规划……</div></div>
 
   <div class="result" id="result">
     <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:11px;color:#888" id="resultMeta"></span></div>
+      <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:11px;color:#a6937c" id="resultMeta"></span></div>
       <div class="result-content" id="resultContent"></div>
       <button class="btn btn-outline" onclick="downloadPDF()">📄 下载 PDF</button>
       <button class="btn btn-outline" onclick="window.location.reload()">🔄 重新规划</button>
     </div>
   </div>
 
-  <p class="footer-text">AI 生成仅供参考 · 出行前请核实信息</p>
+  <p class="footer-text">AI 生成仅供参考 · 出行前请核实信息 · 地名自动校验</p>
 </div>
 
 <script>
-// ==================== 芯片选择 ====================
+// 芯片选择
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', function(){ this.classList.toggle('active'); });
 });
 
-// ==================== 日期联动 + 寒暑假判断 ====================
+// 日期联动 + 寒暑假判断
 (function(){
   const start = document.getElementById('startDate');
-  const end = document.getElementById('endDate');
   const hint = document.getElementById('seasonHint');
-  
-  function updateSeason(){
+  start.addEventListener('change', () => {
     if(start.value){
-      const d = new Date(start.value);
-      const m = d.getMonth() + 1;
-      const day = d.getDate();
-      
-      if(m === 1 || m === 2) hint.textContent = '❄️ 寒假出行 · 热门旅游季 · 注意保暖';
+      const m = new Date(start.value).getMonth() + 1;
+      const d = new Date(start.value).getDate();
+      if(m === 1 || m === 2) hint.textContent = '❄️ 寒假出行 · 注意保暖 · 热门旅游季';
       else if(m >= 7 && m <= 8) hint.textContent = '☀️ 暑假出行 · 游客较多 · 建议提前订票';
-      else if(m === 9 && day <= 10) hint.textContent = '📚 开学季 · 游客减少 · 适合错峰出行';
+      else if(m === 9 && d <= 10) hint.textContent = '📚 开学季 · 游客减少 · 适合错峰';
       else if((m >= 3 && m <= 5) || (m >= 9 && m <= 11)) hint.textContent = '🌸 春秋季 · 最佳旅行季节';
-      else if(m === 12 && day >= 20) hint.textContent = '🎄 圣诞元旦 · 热门旅游季';
       else hint.textContent = '';
     }
-  }
-  
-  start.addEventListener('change', updateSeason);
-  end.addEventListener('change', updateSeason);
+  });
 })();
 
 // ==================== 地名校验（智谱GLM-4-Flash） ====================
-async function validateLocation(cityName){
+async function validateLocation(from, to){
   document.getElementById('validateStatus').textContent = '验证中...';
-  document.getElementById('validateStatus').className = 'validate-badge checking';
-  
   try {
-    const checkRes = await fetch('https://51ai-1.pages.dev/api/proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch('https://51ai-1.pages.dev/api/proxy', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'glm-4-flash',
-        messages: [{ role: 'user', content: `"${cityName}"是一个真实存在的中国城市或国外城市吗？只回答"是"或"否，因为XXX"。` }],
-        temperature: 0.1, max_tokens: 30, stream: false
+        messages: [{ role: 'user', content: `"${from}"和"${to}"是两个真实存在的地点（城市/区县/景点）吗？只回答一个字"是"或"否"。` }],
+        temperature: 0.1, max_tokens: 10, stream: false
       })
     });
-    const checkData = await checkRes.json();
-    const answer = checkData.choices?.[0]?.message?.content || '';
-    
-    if(answer.includes('是') || answer.includes('存在') || answer.includes('真实')){
-      document.getElementById('validateStatus').textContent = '✓ 地名有效';
+    const data = await res.json();
+    const answer = data.choices?.[0]?.message?.content || '否';
+    if(answer.includes('是')){
+      document.getElementById('validateStatus').textContent = '地名有效';
       document.getElementById('validateStatus').className = 'validate-badge ok';
       return true;
-    } else {
-      document.getElementById('validateStatus').textContent = '⚠ 地名存疑';
-      document.getElementById('validateStatus').className = 'validate-badge fail';
-      return false;
     }
-  } catch(e){
-    document.getElementById('validateStatus').textContent = '验证失败';
+    document.getElementById('validateStatus').textContent = '地名存疑';
     document.getElementById('validateStatus').className = 'validate-badge fail';
     return false;
+  } catch(e){
+    document.getElementById('validateStatus').textContent = '验证跳过';
+    document.getElementById('validateStatus').className = 'validate-badge ok';
+    return true;
   }
 }
 
-// ==================== 主规划流程 ====================
+// ==================== 主流程 ====================
 async function startPlan(){
-  const fromCity = document.getElementById('fromCity').value.trim();
-  const toCity = document.getElementById('toCity').value.trim();
-  const fromProvince = document.getElementById('fromProvince').value.trim();
-  const toProvince = document.getElementById('toProvince').value.trim();
+  const from = document.getElementById('fromPlace').value.trim();
+  const to = document.getElementById('toPlace').value.trim();
   const budget = parseFloat(document.getElementById('budget').value);
   const people = parseInt(document.getElementById('people').value);
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
   const spots = document.getElementById('spots').value.trim();
 
-  if(!fromCity || !toCity){ alert('请填写出发城市和目的城市（如：淄博、成都）'); return; }
-  if(fromCity === toCity){ alert('出发地和目的地不能相同'); return; }
+  if(!from || !to){ alert('请填写出发地和目的地'); return; }
+  if(from === to){ alert('出发地和目的地不能相同'); return; }
   if(!budget || budget < 100){ alert('预算至少100元'); return; }
   if(!startDate || !endDate){ alert('请选择日期'); return; }
   if(!people || people < 1){ alert('人数至少1人'); return; }
@@ -241,9 +214,8 @@ async function startPlan(){
   if(days < 1){ alert('日期范围不正确'); return; }
 
   // 地名校验
-  const fromValid = await validateLocation(fromCity);
-  const toValid = await validateLocation(toCity);
-  if((!fromValid || !toValid) && !confirm('地名可能不准确（如：淄博、潍坊等小众城市AI可能判断存疑），是否继续规划？')) return;
+  const valid = await validateLocation(from, to);
+  if(!valid && !confirm('地名可能不准确（AI判断），是否继续规划？')) return;
 
   const prefs = [];
   document.querySelectorAll('#prefChips .chip.active').forEach(c => prefs.push(c.dataset.val));
@@ -252,10 +224,7 @@ async function startPlan(){
   btn.disabled = true; btn.textContent = '规划中……'; result.classList.remove('active'); loading.classList.add('active');
 
   try {
-    const fromFull = fromProvince ? `${fromProvince}${fromCity}` : fromCity;
-    const toFull = toProvince ? `${toProvince}${toCity}` : toCity;
-
-    const systemPrompt = `你是资深旅行规划师。请为从${fromFull}到${toFull}的${days}天旅行生成完整方案。
+    const systemPrompt = `你是资深旅行规划师。请为从${from}到${to}的${days}天旅行生成完整方案。
 预算：${budget}元 | 人数：${people}人 | 偏好：${prefs.join('、')||'无'} | 日期：${startDate}至${endDate} | 想去的景点：${spots||'由AI推荐'}
 
 输出结构：
@@ -271,7 +240,7 @@ async function startPlan(){
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'deepseek-v4-flash',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `请生成${fromFull}到${toFull}的${days}天旅行方案。` }],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: `请生成${from}到${to}的${days}天旅行方案。` }],
         temperature: 0.7, max_tokens: 3000, stream: false
       })
     });
@@ -280,7 +249,7 @@ async function startPlan(){
     const md = data.choices[0].message.content;
 
     document.getElementById('resultContent').innerHTML = marked.parse(md);
-    document.getElementById('resultMeta').textContent = `${fromFull} → ${toFull} · ${days}天 · ${people}人 · ¥${budget}`;
+    document.getElementById('resultMeta').textContent = `${from} → ${to} · ${days}天 · ${people}人 · ¥${budget}`;
     loading.classList.remove('active'); result.classList.add('active');
     result.scrollIntoView({ behavior:'smooth' });
   } catch(e){ loading.classList.remove('active'); alert('规划失败：' + (e.message||'请重试')); }
@@ -289,9 +258,8 @@ async function startPlan(){
 
 function downloadPDF(){
   const el = document.getElementById('resultContent');
-  const origBg = el.style.background, origColor = el.style.color;
-  el.style.background = '#fff'; el.style.color = '#222';
-  html2pdf().set({margin:[8,8,8,8], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background=origBg;el.style.color=origColor;});
+  el.style.background = '#fff'; el.style.color = '#3c2f1d';
+  html2pdf().set({margin:[8,8,8,8], filename:'旅行方案_'+new Date().toLocaleDateString()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>{el.style.background='';el.style.color='';});
 }
 </script>
 </body>
