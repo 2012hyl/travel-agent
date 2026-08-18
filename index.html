@@ -7,287 +7,1872 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif}
-    body{background:#f5f3f0;min-height:100vh;display:flex;justify-content:center;padding:16px}
-    .container{width:100%;max-width:600px;display:flex;flex-direction:column;gap:16px}
-    .header{padding:24px 0 8px;text-align:center}
-    .header h1{color:#2c3e50;font-size:24px;font-weight:700}
-    .header p{color:#7f8c8d;font-size:13px;margin-top:4px}
-    .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
-    .card-title{color:#2c3e50;font-size:15px;font-weight:600;margin-bottom:14px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row>*{flex:1;min-width:140px}
-    .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
-    .field label{color:#555;font-size:12px;font-weight:500}
-    .field input,.field select{width:100%;padding:11px 13px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;color:#2c3e50;font-size:13px;outline:none;transition:all 0.15s}
-    .field input:focus,.field select:focus{border-color:#a0c4e8;background:#fff;box-shadow:0 0 0 3px rgba(160,196,232,0.15)}
-    .field input::placeholder{color:#bbb}
-    .hint{color:#999;font-size:11px;margin-top:2px}
-    .tag-row{display:flex;flex-wrap:wrap;gap:6px}
-    .tag{padding:7px 14px;background:#f0f4f8;border:1px solid #e0e0e0;border-radius:18px;color:#666;font-size:12px;cursor:pointer;transition:all 0.15s;user-select:none}
-    .tag:hover{border-color:#a0c4e8;color:#2c3e50}
-    .tag.active{background:#5b9bd5;border-color:#5b9bd5;color:#fff}
-    .btn{width:100%;padding:13px;background:#5b9bd5;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
-    .btn:hover:not(:disabled){background:#4a8ac4;transform:translateY(-1px)}
-    .btn:disabled{opacity:0.4;cursor:not-allowed}
-    .btn-outline{background:#fff;border:1px solid #d0d0d0;color:#555;margin-top:8px}
-    .btn-outline:hover{background:#f8f9fa}
-    .loading{display:none;text-align:center;padding:32px}
-    .loading.active{display:block}
-    .spinner{width:32px;height:32px;border:2px solid #e0e0e0;border-top-color:#5b9bd5;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 10px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-text{color:#888;font-size:13px}
-    .result{display:none}
-    .result.active{display:block}
-    .result-content{background:#fff;border-radius:16px;padding:24px;color:#2c3e50;line-height:1.7;font-size:13px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
-    .result-content h1{color:#2c3e50;font-size:20px;margin:16px 0 10px;border-bottom:1px solid #eee;padding-bottom:6px}
-    .result-content h2{color:#5b9bd5;font-size:16px;margin:14px 0 8px}
-    .result-content h3{color:#666;font-size:14px;margin:10px 0 6px}
-    .result-content ul,.result-content ol{padding-left:18px;margin:6px 0}
-    .result-content li{margin:3px 0}
-    .result-content strong{color:#e67e22}
-    .result-content table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
-    .result-content th,.result-content td{border:1px solid #eee;padding:7px 10px;text-align:left}
-    .result-content th{background:#f0f4f8;color:#2c3e50}
-    .footer-text{color:#bbb;font-size:11px;text-align:center;margin-top:8px}
-    .footer-text a{color:#5b9bd5;text-decoration:none}
-    @media(max-width:480px){.row>*{min-width:100%}}
+    /* ================================================================
+       设计系统 · 暖白调 Design Tokens
+       ================================================================ */
+    :root {
+      --bg-void: #0c0b09;
+      --bg-deep: #141310;
+      --bg-surface: rgba(255,253,245,0.028);
+      --bg-surface-hover: rgba(255,253,245,0.045);
+      --glass-border: rgba(255,245,230,0.06);
+      --glass-border-strong: rgba(255,245,230,0.12);
+      --glass-highlight: inset 0 0.5px 0 0 rgba(255,245,230,0.1);
+      --text-primary: #f5f0e8;
+      --text-secondary: #a09888;
+      --text-tertiary: #5c5648;
+      --accent-warm: #f5f0e8;
+      --accent-amber: #fbbf24;
+      --accent-coral: #fb923c;
+      --accent-rose: #f87171;
+      --accent-gold: #f59e0b;
+      --gradient-primary: linear-gradient(135deg, #f5f0e8, #fbbf24, #f59e0b);
+      --gradient-glow: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,240,232,0.08));
+      --ease-out-expo: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-xl: 22px;
+    }
+
+    /* ================================================================
+       全局 & 背景层
+       ================================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-void);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 暖调深空背景层 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(251,191,36,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 70%, rgba(245,240,232,0.04) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(251,146,60,0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* 噪点纹理层 */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 128px;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    /* 鼠标跟随暖光球（桌面端） */
+    #cursor-glow {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251,191,36,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.6s ease;
+      opacity: 0;
+      filter: blur(60px);
+    }
+    @media (min-width: 820px) {
+      #cursor-glow { opacity: 1; }
+    }
+
+    /* ================================================================
+       动画关键帧
+       ================================================================ */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.15); }
+      50% { box-shadow: 0 0 40px rgba(251,191,36,0.3); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    @keyframes gradient-flow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes line-grow {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    /* ================================================================
+       手机端默认（移动优先）
+       ================================================================ */
+    .container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeInUp 0.8s var(--ease-out-expo) both;
+    }
+
+    /* 头部 */
+    .header {
+      text-align: center;
+      padding: 32px 0 16px;
+      position: relative;
+      animation: fadeInUp 0.7s var(--ease-out-expo) 0.1s both;
+    }
+    .header .emoji-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .header .emoji {
+      font-size: 44px;
+      display: block;
+      position: relative;
+      z-index: 1;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 6px 20px rgba(251,191,36,0.35));
+    }
+    .header .emoji-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .header h1 {
+      color: #fff;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #fff 0%, #fef3c7 40%, #fde68a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+    .header p {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    /* 卡片系统 */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      backdrop-filter: blur(24px) saturate(1.3);
+      -webkit-backdrop-filter: blur(24px) saturate(1.3);
+      box-shadow: var(--glass-highlight), 0 8px 32px rgba(0,0,0,0.35);
+      transition: all 0.45s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s var(--ease-out-expo) both;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,245,230,0.12), transparent);
+    }
+    .card:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--glass-border-strong);
+      box-shadow: var(--glass-highlight), 0 12px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(251,191,36,0.08);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,245,230,0.08), transparent);
+      margin-left: 4px;
+    }
+
+    /* 表单系统 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeInUp 0.5s var(--ease-out-expo) both;
+    }
+    .form-group:nth-child(1) { animation-delay: 0.05s; }
+    .form-group:nth-child(2) { animation-delay: 0.1s; }
+    .form-group:nth-child(3) { animation-delay: 0.15s; }
+    .form-group:nth-child(4) { animation-delay: 0.2s; }
+    .form-group:nth-child(5) { animation-delay: 0.25s; }
+    .form-group:nth-child(6) { animation-delay: 0.3s; }
+    .form-group:nth-child(7) { animation-delay: 0.35s; }
+    .form-group:nth-child(8) { animation-delay: 0.4s; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      color: var(--text-tertiary);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.35s var(--ease-out-expo);
+      font-family: inherit;
+      position: relative;
+    }
+    .form-group input:hover,
+    .form-group select:hover {
+      border-color: rgba(255,245,230,0.14);
+      background: rgba(255,253,245,0.045);
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent-amber);
+      background: rgba(251,191,36,0.06);
+      box-shadow:
+        0 0 0 3px rgba(251,191,36,0.1),
+        0 0 30px rgba(251,191,36,0.08),
+        inset 0 1px 2px rgba(251,191,36,0.05);
+    }
+    .form-group select option {
+      background: #1a1814;
+      color: var(--text-primary);
+    }
+    .form-group input::placeholder {
+      color: rgba(92,86,72,0.7);
+    }
+
+    /* 错误状态 */
+    .form-group.error input,
+    .form-group.error select {
+      border-color: var(--accent-rose);
+      animation: shake 0.4s ease;
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.1);
+    }
+    .form-error-msg {
+      color: var(--accent-rose);
+      font-size: 11px;
+      margin-top: 2px;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.3s var(--ease-out-expo);
+      height: 0;
+      overflow: hidden;
+    }
+    .form-group.error .form-error-msg {
+      opacity: 1;
+      transform: translateY(0);
+      height: auto;
+    }
+
+    .input-with-custom {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .input-with-custom select { flex: 2; min-width: 0; }
+    .input-with-custom input { flex: 1; min-width: 70px; }
+    .input-with-custom .or-label {
+      color: var(--text-tertiary);
+      font-size: 10px;
+      padding: 0 2px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* 标签系统 */
+    .tag-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      padding: 7px 16px;
+      background: rgba(255,253,245,0.025);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-spring);
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      font-weight: 500;
+    }
+    .tag::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.35s var(--ease-out-expo);
+    }
+    .tag:hover {
+      border-color: rgba(251,191,36,0.4);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(251,191,36,0.12);
+    }
+    .tag.selected {
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: #1a1814;
+      box-shadow: 0 4px 20px rgba(251,191,36,0.35), 0 0 0 1px rgba(251,191,36,0.2);
+      transform: translateY(-1px) scale(1.02);
+    }
+    .tag.selected::before { opacity: 1; }
+
+    /* 人员输入 */
+    .people-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .people-row .pgroup {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,253,245,0.02);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,245,230,0.05);
+      transition: all 0.3s var(--ease-out-expo);
+    }
+    .people-row .pgroup:hover {
+      border-color: rgba(255,245,230,0.1);
+      background: rgba(255,253,245,0.035);
+    }
+    .people-row .pgroup label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .people-row input {
+      width: 52px;
+      padding: 8px;
+      text-align: center;
+      background: rgba(255,253,245,0.04);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: all 0.3s var(--ease-out-expo);
+      outline: none;
+    }
+    .people-row input:focus {
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 0 2px rgba(251,191,36,0.1);
+      background: rgba(251,191,36,0.05);
+    }
+
+    /* 按钮系统 */
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: var(--gradient-primary);
+      background-size: 200% 200%;
+      border: none;
+      border-radius: var(--radius-md);
+      color: #1a1814;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.4s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.6px;
+      margin-top: 4px;
+      animation: gradient-flow 4s ease infinite;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      background-size: 200% 100%;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(251,191,36,0.4), 0 0 0 1px rgba(251,191,36,0.25);
+    }
+    .btn-primary:hover::before {
+      opacity: 1;
+      animation: shimmer 2s linear infinite;
+    }
+    .btn-primary:active {
+      transform: translateY(0) scale(0.985);
+    }
+    .btn-primary:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      animation: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.08);
+      border-radius: var(--radius-md);
+      color: #9a9288;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-out-expo);
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.3px;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,253,245,0.07);
+      border-color: rgba(255,245,230,0.16);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    /* 加载状态 */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 50px 20px;
+      animation: fadeIn 0.5s ease;
+    }
+    .loading.active { display: block; }
+
+    .spinner-wrap {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 18px;
+    }
+    .spinner {
+      position: absolute;
+      inset: 0;
+      border: 2.5px solid rgba(255,245,230,0.04);
+      border-top-color: var(--accent-amber);
+      border-right-color: var(--accent-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .spinner-inner {
+      position: absolute;
+      inset: 8px;
+      border: 2px solid transparent;
+      border-top-color: rgba(251,191,36,0.3);
+      border-radius: 50%;
+      animation: spin 1.8s linear infinite reverse;
+    }
+    .spinner-core {
+      position: absolute;
+      inset: 18px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .loading-sub {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      margin-top: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    /* 结果区 */
+    .result {
+      display: none;
+    }
+    .result.active {
+      display: block;
+      animation: slideInRight 0.7s var(--ease-out-expo) both;
+    }
+    .result .card {
+      background: rgba(255,253,245,0.02);
+      border-color: rgba(255,245,230,0.05);
+    }
+    .result .card .card-title {
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .result .card .card-title span:last-child {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      background: rgba(255,253,245,0.03);
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,245,230,0.05);
+      letter-spacing: 0.3px;
+      text-transform: none;
+    }
+
+    /* Markdown 内容区 · 杂志排版 */
+    .result-content {
+      background: rgba(255,253,245,0.015);
+      border: 1px solid rgba(255,245,230,0.04);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      color: #d8d4cc;
+      line-height: 1.85;
+      font-size: 14px;
+      animation: fadeInUp 0.6s var(--ease-out-expo) 0.15s both;
+    }
+
+    .result-content h1 {
+      font-size: 22px;
+      margin: 28px 0 16px;
+      padding-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      background: linear-gradient(135deg, #fff 0%, #fde68a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+    .result-content h1:first-child { margin-top: 0; }
+    .result-content h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 2px;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+      animation: line-grow 0.8s var(--ease-out-expo) 0.3s both;
+    }
+
+    .result-content h2 {
+      color: #fde68a;
+      font-size: 17px;
+      margin: 22px 0 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.1px;
+    }
+    .result-content h2::before {
+      content: '';
+      width: 4px;
+      height: 18px;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .result-content h3 {
+      color: #b8b0a0;
+      font-size: 14.5px;
+      margin: 14px 0 10px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .result-content ul,
+    .result-content ol {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+    .result-content li {
+      margin: 6px 0;
+      position: relative;
+    }
+    .result-content li::marker {
+      color: var(--accent-amber);
+      font-size: 1.1em;
+    }
+
+    .result-content strong {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    .result-content table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 16px 0;
+      font-size: 13px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,245,230,0.06);
+    }
+    .result-content th,
+    .result-content td {
+      border: none;
+      border-bottom: 1px solid rgba(255,245,230,0.05);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .result-content th {
+      background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,240,232,0.06));
+      color: #fde68a;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .result-content tr:last-child td { border-bottom: none; }
+    .result-content tr:nth-child(even) { background: rgba(255,253,245,0.015); }
+    .result-content tr {
+      transition: background 0.25s ease;
+    }
+    .result-content tr:hover {
+      background: rgba(251,191,36,0.04);
+    }
+
+    .result-content blockquote {
+      border-left: 3px solid var(--accent-amber);
+      padding: 12px 18px;
+      margin: 14px 0;
+      color: #9a9288;
+      background: linear-gradient(90deg, rgba(251,191,36,0.05), transparent);
+      border-radius: 0 10px 10px 0;
+      font-style: italic;
+      line-height: 1.7;
+    }
+
+    .result-content code {
+      background: rgba(255,253,245,0.08);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 12.5px;
+      color: #fcd34d;
+      font-family: "SF Mono", Monaco, monospace;
+      border: 1px solid rgba(255,245,230,0.06);
+    }
+    .result-content pre {
+      background: rgba(0,0,0,0.25);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      border: 1px solid rgba(255,245,230,0.06);
+      margin: 12px 0;
+    }
+    .result-content pre code {
+      background: none;
+      padding: 0;
+      color: #fde68a;
+      border: none;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .result-content hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,245,230,0.1), transparent);
+      margin: 24px 0;
+    }
+
+    .result-content a {
+      color: var(--accent-amber);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(251,191,36,0.4);
+      transition: all 0.25s ease;
+    }
+    .result-content a:hover {
+      border-bottom-color: var(--accent-amber);
+      color: #fcd34d;
+    }
+
+    .result-content p {
+      margin: 10px 0;
+    }
+
+    /* 追问区 */
+    .followup-area {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,245,230,0.05);
+      animation: fadeInUp 0.5s var(--ease-out-expo) 0.25s both;
+    }
+    .followup-area .fu-label {
+      color: var(--text-secondary);
+      font-size: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .followup-area .fu-row {
+      display: flex;
+      gap: 10px;
+    }
+    .followup-area .fu-row input {
+      flex: 1;
+      padding: 11px 16px;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.35s var(--ease-out-expo);
+      font-family: inherit;
+    }
+    .followup-area .fu-row input:focus {
+      border-color: var(--accent-amber);
+      background: rgba(251,191,36,0.05);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.1), 0 0 25px rgba(251,191,36,0.06);
+    }
+    .followup-area .fu-row input::placeholder {
+      color: rgba(92,86,72,0.6);
+    }
+    .followup-area .fu-row button {
+      padding: 11px 24px;
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #1a1814;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-out-expo);
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .followup-area .fu-row button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(251,191,36,0.35);
+    }
+    .followup-area .fu-row button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .followup-area .fu-answer {
+      margin-top: 12px;
+      color: #b8b0a0;
+      font-size: 13.5px;
+      padding: 18px 20px;
+      background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(245,240,232,0.03));
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--accent-gold);
+      animation: fadeInUp 0.4s var(--ease-out-expo);
+      line-height: 1.75;
+      border: 1px solid rgba(251,191,36,0.08);
+      border-left-width: 3px;
+    }
+    .followup-area .fu-answer strong { color: var(--accent-gold); }
+    .followup-area .fu-answer em { color: #fcd34d; font-style: normal; }
+
+    /* 日期行 */
+    .date-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .date-row input { flex: 1; }
+    .date-row span {
+      color: var(--text-tertiary);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* 底部提示 */
+    .tips {
+      color: var(--text-tertiary);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 8px;
+      padding: 14px;
+      background: rgba(255,253,245,0.015);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,245,230,0.03);
+      letter-spacing: 0.3px;
+      line-height: 1.6;
+    }
+    .tips a {
+      color: var(--accent-amber);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(251,191,36,0.3);
+    }
+    .tips a:hover { border-bottom-color: var(--accent-amber); }
+
+    /* ================================================================
+       追问弹窗 · 高级 Dialog
+       ================================================================ */
+    .qz-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s var(--ease-out-expo);
+    }
+    .qz-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    .qz-panel {
+      background: linear-gradient(165deg, #1a1814, #12100e);
+      border: 1px solid rgba(255,245,230,0.08);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 520px;
+      width: 92%;
+      max-height: 82vh;
+      overflow-y: auto;
+      transform: scale(0.88) translateY(30px);
+      opacity: 0;
+      transition: all 0.5s var(--ease-spring);
+      box-shadow:
+        0 32px 96px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,245,230,0.05),
+        inset 0 1px 0 rgba(255,245,230,0.08);
+      position: relative;
+    }
+    .qz-overlay.active .qz-panel {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+    .qz-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(251,191,36,0.4), transparent);
+    }
+    .qz-panel h2 {
+      color: #fff;
+      font-size: 20px;
+      margin-bottom: 4px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      background: linear-gradient(135deg, #fff 0%, #fde68a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .qz-panel .sub {
+      color: var(--text-tertiary);
+      font-size: 13px;
+      margin-bottom: 24px;
+      letter-spacing: 0.2px;
+    }
+
+    .qz-item {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,245,230,0.04);
+      animation: fadeInUp 0.5s var(--ease-out-expo) both;
+    }
+    .qz-item:nth-child(1) { animation-delay: 0.05s; }
+    .qz-item:nth-child(2) { animation-delay: 0.1s; }
+    .qz-item:nth-child(3) { animation-delay: 0.15s; }
+    .qz-item:nth-child(4) { animation-delay: 0.2s; }
+    .qz-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .qz-item .q {
+      color: var(--text-primary);
+      font-size: 14.5px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.1px;
+    }
+    .qz-item .q::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      box-shadow: 0 0 10px rgba(251,191,36,0.5);
+      flex-shrink: 0;
+    }
+
+    .qz-item .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .qz-item .options .qz-tag {
+      padding: 7px 16px;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: 18px;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-spring);
+      position: relative;
+      overflow: hidden;
+      font-weight: 500;
+    }
+    .qz-item .options .qz-tag:hover {
+      border-color: rgba(251,191,36,0.4);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .qz-item .options .qz-tag.selected {
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: #1a1814;
+      box-shadow: 0 4px 18px rgba(251,191,36,0.35);
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    .qz-item .qz-input {
+      width: 100%;
+      padding: 11px 16px;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.07);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      margin-top: 10px;
+      transition: all 0.35s var(--ease-out-expo);
+      font-family: inherit;
+    }
+    .qz-item .qz-input:focus {
+      border-color: var(--accent-amber);
+      background: rgba(251,191,36,0.05);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.1), 0 0 25px rgba(251,191,36,0.06);
+    }
+
+    .qz-btns {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .qz-btns .btn-primary {
+      flex: 1;
+      padding: 14px;
+      font-size: 14px;
+      border-radius: var(--radius-sm);
+      margin-top: 0;
+    }
+    .qz-btns .btn-skip {
+      flex: 0 0 auto;
+      padding: 14px 26px;
+      background: transparent;
+      border: 1px solid rgba(255,245,230,0.1);
+      border-radius: var(--radius-sm);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.35s var(--ease-out-expo);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .qz-btns .btn-skip:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-amber);
+      background: rgba(251,191,36,0.08);
+    }
+
+    /* ================================================================
+       状态徽章
+       ================================================================ */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255,253,245,0.03);
+      border: 1px solid rgba(255,245,230,0.06);
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+    }
+    .status-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-amber);
+      box-shadow: 0 0 8px rgba(251,191,36,0.6);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* ================================================================
+       滚动条
+       ================================================================ */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,245,230,0.08);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,245,230,0.16); }
+
+    /* ================================================================
+       电脑端专属样式（屏幕宽度 > 820px）
+       ================================================================ */
+    @media (min-width: 820px) {
+      body { padding: 36px; background: #0a0907; }
+
+      .container {
+        max-width: 1320px;
+        gap: 36px;
+        display: grid;
+        grid-template-columns: 460px 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .header {
+        grid-column: 1 / -1;
+        text-align: left;
+        padding: 16px 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        border-bottom: 1px solid rgba(255,245,230,0.04);
+        padding-bottom: 24px;
+      }
+      .header .emoji-wrap { margin-bottom: 0; }
+      .header .emoji {
+        font-size: 40px;
+        display: inline-block;
+        animation: float 4s ease-in-out infinite;
+      }
+      .header .emoji-glow {
+        width: 90px;
+        height: 90px;
+      }
+      .header h1 {
+        font-size: 30px;
+        background: linear-gradient(135deg, #fff 0%, #fef3c7 50%, #fde68a 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .header p {
+        font-size: 14px;
+        color: #4a4538;
+        margin-top: 3px;
+        letter-spacing: 0.3px;
+      }
+
+      .card:first-of-type {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        align-self: start;
+        padding: 36px 32px;
+        border-radius: 24px;
+        background: rgba(255,253,245,0.025);
+        border-color: rgba(255,245,230,0.07);
+        backdrop-filter: blur(28px) saturate(1.4);
+        -webkit-backdrop-filter: blur(28px) saturate(1.4);
+        box-shadow: var(--glass-highlight), 0 12px 48px rgba(0,0,0,0.4);
+      }
+      .card:first-of-type:hover {
+        box-shadow: var(--glass-highlight), 0 16px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(251,191,36,0.1);
+      }
+      .card:first-of-type .card-title {
+        font-size: 12px;
+        margin-bottom: 22px;
+        color: #e8e4dc;
+        letter-spacing: 0.8px;
+      }
+      .card:first-of-type .form-grid { gap: 18px; }
+      .card:first-of-type .form-group label {
+        font-size: 11px;
+        color: #5a5448;
+        letter-spacing: 0.8px;
+      }
+      .card:first-of-type .form-group input,
+      .card:first-of-type .form-group select {
+        padding: 13px 16px;
+        font-size: 14px;
+        border-radius: var(--radius-sm);
+      }
+      .card:first-of-type .tag {
+        padding: 8px 20px;
+        font-size: 13px;
+        border-radius: 22px;
+      }
+      .card:first-of-type .people-row input { width: 58px; padding: 9px; }
+      .card:first-of-type .btn-primary {
+        margin-top: 10px;
+        padding: 17px;
+        font-size: 15.5px;
+        border-radius: var(--radius-md);
+        letter-spacing: 0.8px;
+      }
+
+      .loading {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+        align-self: center;
+      }
+      .result {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+        display: none;
+        align-self: start;
+      }
+      .result.active { display: block; }
+
+      .result .card {
+        padding: 0;
+        background: transparent;
+        border: none;
+        backdrop-filter: none;
+        box-shadow: none;
+      }
+      .result .card:hover { transform: none; }
+      .result .card .card-title {
+        font-size: 12px;
+        color: #b0a898;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255,245,230,0.06);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        letter-spacing: 0.8px;
+      }
+
+      .result-content {
+        padding: 36px 40px;
+        border-radius: var(--radius-xl);
+        background: rgba(255,253,245,0.018);
+        border: 1px solid rgba(255,245,230,0.05);
+        font-size: 14.5px;
+        line-height: 1.9;
+        max-height: 74vh;
+        overflow-y: auto;
+        box-shadow: inset 0 1px 0 rgba(255,245,230,0.03);
+      }
+
+      .result-content h1 { font-size: 26px; margin: 32px 0 18px; }
+      .result-content h1:first-child { margin-top: 0; }
+      .result-content h1::after { width: 80px; height: 2.5px; }
+      .result-content h2 { font-size: 19px; }
+      .result-content h3 { font-size: 15.5px; }
+      .result-content table { font-size: 13.5px; }
+      .result-content th,
+      .result-content td { padding: 12px 18px; }
+
+      .followup-area {
+        margin-top: 24px;
+        padding-top: 24px;
+      }
+      .followup-area .fu-label { font-size: 13px; color: #6a6458; }
+      .followup-area .fu-row input { padding: 12px 18px; font-size: 14px; }
+      .followup-area .fu-row button { padding: 12px 28px; font-size: 14px; }
+      .followup-area .fu-answer {
+        padding: 20px 24px;
+        font-size: 14px;
+      }
+
+      .result .btn-secondary {
+        width: auto;
+        display: inline-block;
+        padding: 12px 28px;
+        margin-top: 14px;
+        margin-right: 12px;
+        background: rgba(255,253,245,0.03);
+        border-color: rgba(255,245,230,0.08);
+        font-size: 13px;
+        border-radius: var(--radius-sm);
+      }
+
+      .tips {
+        grid-column: 1 / -1;
+        grid-row: 3 / 4;
+        color: #2a2820;
+        font-size: 12px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,245,230,0.03);
+        background: transparent;
+        border: none;
+        padding: 14px 0;
+      }
+
+      .qz-panel {
+        max-width: 620px;
+        padding: 40px 44px;
+        border-radius: 28px;
+      }
+      .qz-panel h2 { font-size: 24px; }
+      .qz-item .q { font-size: 15.5px; }
+      .qz-item .options .qz-tag { font-size: 13.5px; padding: 8px 20px; }
+      .qz-item .qz-input { font-size: 14px; padding: 12px 18px; }
+    }
+
+    /* 平板过渡 */
+    @media (min-width: 600px) and (max-width: 819px) {
+      .container { max-width: 740px; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .card { padding: 28px; }
+      .header h1 { font-size: 30px; }
+    }
+
+    /* 小屏手机微调 */
+    @media (max-width: 480px) {
+      body { padding: 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .people-row { gap: 8px; }
+      .people-row .pgroup label { font-size: 11px; }
+      .people-row input { width: 46px; }
+      .input-with-custom { flex-wrap: wrap; }
+      .input-with-custom select { flex: 1; min-width: 120px; }
+      .qz-panel { padding: 24px; border-radius: 20px; }
+      .qz-btns { flex-wrap: wrap; }
+      .qz-btns .btn-skip { flex: 1; text-align: center; }
+      .header .emoji { font-size: 38px; }
+      .header h1 { font-size: 24px; }
+      .result-content { padding: 20px; }
+      .card { padding: 20px; }
+    }
   </style>
 </head>
 <body>
+
+<div id="cursor-glow"></div>
+
 <div class="container">
+  <!-- 头部 -->
   <div class="header">
-    <h1>🧳 旅行规划师</h1>
-    <p>像朋友一样帮你规划旅行 · 完全免费</p>
+    <div class="emoji-wrap">
+      <span class="emoji">🧳</span>
+      <div class="emoji-glow"></div>
+    </div>
+    <div>
+      <h1>旅行规划师</h1>
+      <p>AI 像朋友一样帮你规划旅行 · 支持追问和 PDF</p>
+    </div>
   </div>
 
+  <!-- 左侧：表单卡片 -->
   <div class="card">
-    <div class="card-title">📍 旅行信息</div>
-    
-    <div class="row">
-      <div class="field">
-        <label>🏠 出发地</label>
-        <input type="text" id="fromCity" placeholder="如：上海浦东" maxlength="30">
+    <div class="card-title">📋 填写旅行信息</div>
+    <div class="form-grid">
+      <!-- 始发地 -->
+      <div class="form-group" id="fg-from">
+        <label>🏠 始发地</label>
+        <div class="input-with-custom">
+          <select id="fromSelect"><option value="">请选择</option></select>
+          <span class="or-label">或</span>
+          <input type="text" id="fromCustom" placeholder="输入其他城市">
+        </div>
+        <div class="form-error-msg"></div>
       </div>
-      <div class="field">
+      <!-- 目的地 -->
+      <div class="form-group" id="fg-dest">
         <label>🌍 目的地</label>
-        <input type="text" id="toCity" placeholder="如：淄博张店区" maxlength="30">
+        <div class="input-with-custom">
+          <select id="destSelect"><option value="">请选择</option></select>
+          <span class="or-label">或</span>
+          <input type="text" id="destCustom" placeholder="输入其他">
+        </div>
+        <div class="form-error-msg"></div>
+      </div>
+      <div class="form-group" id="fg-budget">
+        <label>💰 预算（元）</label>
+        <input type="number" id="budget" placeholder="如：5000" min="100">
+        <div class="form-error-msg"></div>
+      </div>
+      <div class="form-group" id="fg-date">
+        <label>📅 日期</label>
+        <div class="date-row">
+          <input type="date" id="startDate">
+          <span>→</span>
+          <input type="date" id="endDate">
+        </div>
+        <span style="color:var(--text-tertiary);font-size:11px;margin-top:3px;display:block" id="dayCount">选择日期后自动计算</span>
+        <div class="form-error-msg"></div>
+      </div>
+      <div class="form-group full" id="fg-people">
+        <label>👥 出行人员</label>
+        <div class="people-row">
+          <div class="pgroup">
+            <label>🧑 成人</label>
+            <input type="number" id="adults" value="1" min="0" max="20">
+          </div>
+          <div class="pgroup">
+            <label>👶 小孩</label>
+            <input type="number" id="children" value="0" min="0" max="10">
+          </div>
+          <div class="pgroup">
+            <label>👴 老人</label>
+            <input type="number" id="elders" value="0" min="0" max="10">
+          </div>
+        </div>
+        <div class="form-error-msg"></div>
+      </div>
+      <div class="form-group full">
+        <label>🚄 城际交通</label>
+        <div class="tag-group" id="cityTags">
+          <span class="tag" data-val="高铁">🚄 高铁</span>
+          <span class="tag" data-val="飞机">✈️ 飞机</span>
+          <span class="tag" data-val="火车">🚂 火车</span>
+          <span class="tag" data-val="自驾">🚗 自驾</span>
+          <span class="tag" data-val="大巴">🚌 大巴</span>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>🚕 景点间交通</label>
+        <div class="tag-group" id="localTags">
+          <span class="tag" data-val="地铁">🚇 地铁</span>
+          <span class="tag" data-val="公交">🚌 公交</span>
+          <span class="tag" data-val="打车">🚕 打车</span>
+          <span class="tag" data-val="共享单车">🚲 共享单车</span>
+          <span class="tag" data-val="步行">🚶 步行</span>
+          <span class="tag" data-val="景区专线">🚐 景区专线</span>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>🎯 旅行偏好</label>
+        <div class="tag-group" id="prefTags">
+          <span class="tag" data-val="美食">🍜 美食</span>
+          <span class="tag" data-val="拍照">📸 拍照</span>
+          <span class="tag" data-val="购物">🛍️ 购物</span>
+          <span class="tag" data-val="自然风光">🏔️ 自然</span>
+          <span class="tag" data-val="历史文化">🏛️ 历史</span>
+          <span class="tag" data-val="冒险">🧗 冒险</span>
+          <span class="tag" data-val="放松度假">🏖️ 放松</span>
+          <span class="tag" data-val="亲子">👶 亲子</span>
+          <span class="tag" data-val="乡村生活">🌾 乡村</span>
+        </div>
       </div>
     </div>
-
-    <div class="field">
-      <label>🎯 想去的景点（选填，逗号分隔）</label>
-      <input type="text" id="spots" placeholder="如：八大局、海岱楼、蒲松龄故居" maxlength="200">
-      <span class="hint">不知道有什么景点？留空让AI推荐</span>
-    </div>
-
-    <div class="row">
-      <div class="field"><label>💰 预算（元）</label><input type="number" id="budget" placeholder="如：3000" min="100"></div>
-      <div class="field"><label>👥 人数</label><input type="number" id="people" value="1" min="1" max="20"></div>
-    </div>
-
-    <div class="row">
-      <div class="field"><label>📅 出发日期</label><input type="date" id="startDate"></div>
-      <div class="field"><label>📅 返程日期</label><input type="date" id="endDate"></div>
-    </div>
-    <span class="hint" id="seasonHint" style="display:block;margin-top:-8px"></span>
-
-    <div class="field">
-      <label>🎯 旅行偏好（可多选）</label>
-      <div class="tag-row" id="prefTags">
-        <span class="tag" data-val="美食">🍜 美食</span>
-        <span class="tag" data-val="拍照">📸 拍照</span>
-        <span class="tag" data-val="自然风光">🏔️ 自然</span>
-        <span class="tag" data-val="历史文化">🏛️ 历史</span>
-        <span class="tag" data-val="购物">🛍️ 购物</span>
-        <span class="tag" data-val="放松度假">🏖️ 放松</span>
-        <span class="tag" data-val="亲子">👶 亲子</span>
-        <span class="tag" data-val="冒险">🧗 冒险</span>
-      </div>
-    </div>
-
-    <button class="btn" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
+    <button class="btn-primary" id="planBtn" onclick="startPlan()">✨ 开始规划</button>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">AI 正在为你设计旅行方案……</div></div>
+  <!-- 加载 -->
+  <div class="loading" id="loading">
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <div class="spinner-inner"></div>
+      <div class="spinner-core"></div>
+    </div>
+    <div class="loading-text">AI 正在为你设计旅行方案……</div>
+    <p class="loading-sub">后台处理中，切出也不影响</p>
+  </div>
 
+  <!-- 右侧：结果 -->
   <div class="result" id="result">
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title" style="justify-content:space-between"><span>📝 旅行方案</span><span style="font-size:11px;color:#999" id="resultMeta"></span></div>
+    <div class="card">
+      <div class="card-title">
+        <span>📝 你的旅行方案</span>
+        <span id="resultMeta"></span>
+      </div>
       <div class="result-content" id="resultContent"></div>
-      <button class="btn btn-outline" onclick="downloadPDF()">📄 下载 PDF</button>
-      <button class="btn btn-outline" onclick="window.location.reload()">🔄 重新规划</button>
+
+      <div class="followup-area" id="followupArea">
+        <div class="fu-label">💬 对方案有疑问或想调整？追问 AI</div>
+        <div class="fu-row">
+          <input type="text" id="followupInput" placeholder="如：预算超了，帮我精简；或者多推荐几家餐厅…">
+          <button id="followupBtn" onclick="askFollowup()">追问</button>
+        </div>
+        <div id="followupAnswer" class="fu-answer" style="display:none"></div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
+        <button class="btn-secondary" onclick="downloadPDF()">📄 下载 PDF</button>
+        <button class="btn-secondary" onclick="window.location.reload()">🔄 重新规划</button>
+      </div>
     </div>
   </div>
 
-  <p class="footer-text">AI 生成仅供参考 · 出行前请核实 · 由智谱GLM免费驱动</p>
+  <!-- 底部 -->
+  <p class="tips">💡 AI 生成仅供参考 · 支持追问修改 · 出行前请核实</p>
+</div>
+
+<!-- 追问弹窗 -->
+<div class="qz-overlay" id="qzOverlay">
+  <div class="qz-panel">
+    <h2>💬 补充几个小问题</h2>
+    <div class="sub">回答后方案会更精准 · 也可跳过</div>
+    <div id="qzBody"></div>
+    <div class="qz-btns">
+      <button class="btn-primary" id="qzConfirmBtn" onclick="confirmQZ()">✨ 确认，开始生成</button>
+      <button class="btn-skip" onclick="skipQZ()">跳过，直接生成</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ===== API 地址常量 =====
-const API_URL = 'https://51ai-1.pages.dev/api/proxy';
+// ============================================================
+// 数据 & 工具
+// ============================================================
+const ALL_CITIES = [
+  '北京','上海','广州','深圳','天津','重庆','哈尔滨','长春','沈阳','大连','呼和浩特','乌鲁木齐','拉萨','西宁','兰州','银川','西安',
+  '石家庄','太原','济南','青岛','烟台','威海','郑州','洛阳','开封','南京','苏州','无锡','常州','南通','扬州','徐州','杭州','宁波','温州','绍兴','嘉兴','湖州','金华','舟山',
+  '合肥','黄山','芜湖','南昌','九江','景德镇','福州','厦门','泉州','武夷山','武汉','宜昌','长沙','张家界','岳阳','凤凰','珠海','佛山','东莞','中山','惠州','汕头','湛江',
+  '南宁','桂林','北海','柳州','海口','三亚','万宁','陵水','成都','绵阳','乐山','峨眉山','九寨沟','稻城','康定','贵阳','遵义','安顺','黄果树','昆明','大理','丽江','香格里拉','西双版纳','腾冲',
+  '香港','澳门','台北','高雄','台中','台南','花莲',
+  '东京','大阪','京都','札幌','首尔','釜山','济州','新加坡','曼谷','清迈','普吉','芭提雅','吉隆坡','槟城','马六甲','河内','胡志明市','岘港','暹粒','金边','仰光','马尼拉','长滩岛','雅加达','巴厘岛','马尔代夫','迪拜','阿布扎比','伊斯坦布尔',
+  '伦敦','曼彻斯特','爱丁堡','巴黎','尼斯','里昂','柏林','慕尼黑','法兰克福','罗马','米兰','威尼斯','佛罗伦萨','巴塞罗那','马德里','里斯本','阿姆斯特丹','布鲁塞尔','苏黎世','日内瓦','维也纳','布拉格','布达佩斯','莫斯科','圣彼得堡','雅典','圣托里尼',
+  '纽约','洛杉矶','旧金山','拉斯维加斯','芝加哥','西雅图','波士顿','华盛顿','温哥华','多伦多','蒙特利尔','悉尼','墨尔本','布里斯班','黄金海岸','奥克兰','皇后镇','开罗','开普敦','约翰内斯堡','内罗毕','卡萨布兰卡'
+];
 
-// ===== 输入过滤函数 =====
-function cleanInput(input) {
-  if (typeof input !== 'string') return '';
-  let str = input.trim();
-  if (str.length === 0) return '';
-  if (str.length < 2) return '';
-  
-  // 检查是否包含有效字符（字母、数字、中文）
-  const hasValidChar = /[a-zA-Z\u4e00-\u9fff]/.test(str);
-  if (!hasValidChar) return '';
-  
-  // 检查是否全是数字
-  if (/^\d+$/.test(str.replace(/\s/g, ''))) return '';
-  
-  // 检查连续重复字符超过3个
-  if (/(.)\1{3,}/.test(str)) return '';
-  
-  // 检查是否全是标点和空格混合
-  const onlyPunct = /^[\s\p{P}\p{S}]+$/u.test(str);
-  if (onlyPunct) return '';
-  
-  return str;
-}
-
-// 标签选择
-document.querySelectorAll('.tag').forEach(tag => {
-  tag.addEventListener('click', function(){ this.classList.toggle('active'); });
-});
-
-// 日期联动 + 寒暑假判断
-(function(){
-  const start = document.getElementById('startDate');
-  const hint = document.getElementById('seasonHint');
-  start.addEventListener('change', ()=>{
-    if(start.value){
-      const m = new Date(start.value).getMonth() + 1;
-      const d = new Date(start.value).getDate();
-      if(m===1||m===2) hint.textContent = '❄️ 寒假 · 热门季 · 建议提前订票';
-      else if(m>=7&&m<=8) hint.textContent = '☀️ 暑假 · 人多价高 · 建议错峰';
-      else if(m===9&&d<=10) hint.textContent = '📚 开学季 · 错峰好时机';
-      else if((m>=3&&m<=5)||(m>=9&&m<=11)) hint.textContent = '🌸 春秋季 · 最佳旅行季节';
-      else hint.textContent = '';
-    }
-  });
+(function initSelects(){
+  const fs = document.getElementById('fromSelect'), ds = document.getElementById('destSelect');
+  ALL_CITIES.forEach(c => { fs.add(new Option(c,c)); ds.add(new Option(c,c)); });
 })();
 
-// 主规划流程
+// 鼠标跟随暖光球
+(function initCursorGlow(){
+  const glow = document.getElementById('cursor-glow');
+  let mx = -500, my = -500, cx = -500, cy = -500;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animate(){
+    cx += (mx - cx) * 0.08;
+    cy += (my - cy) * 0.08;
+    glow.style.left = cx + 'px';
+    glow.style.top = cy + 'px';
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+function getFrom(){
+  const sel = document.getElementById('fromSelect').value;
+  const custom = document.getElementById('fromCustom').value.trim();
+  return custom || sel || '';
+}
+function getDestination(){
+  const sel = document.getElementById('destSelect').value;
+  const custom = document.getElementById('destCustom').value.trim();
+  return custom || sel || '';
+}
+
+document.querySelectorAll('.tag').forEach(t => {
+  t.addEventListener('click', function(){
+    this.classList.toggle('selected');
+    this.style.transform = 'scale(0.95)';
+    setTimeout(() => { this.style.transform = ''; }, 120);
+  });
+});
+
+(function calcDays(){
+  const s = document.getElementById('startDate'), e = document.getElementById('endDate'), dc = document.getElementById('dayCount');
+  function update(){
+    if(s.value && e.value){
+      const diff = Math.ceil((new Date(e.value) - new Date(s.value)) / 86400000);
+      if(diff > 0) dc.textContent = '共 ' + diff + ' 天';
+      else { dc.textContent = '日期范围不正确'; e.value = ''; }
+    }
+  }
+  s.addEventListener('change', update);
+  e.addEventListener('change', update);
+})();
+
+function getSelected(containerId){
+  const arr = [];
+  document.querySelectorAll('#' + containerId + ' .tag.selected').forEach(t => arr.push(t.dataset.val));
+  return arr;
+}
+
+function getFormData(){
+  return {
+    from: getFrom(),
+    destination: getDestination(),
+    budget: parseFloat(document.getElementById('budget').value) || 0,
+    startDate: document.getElementById('startDate').value,
+    endDate: document.getElementById('endDate').value,
+    adults: parseInt(document.getElementById('adults').value) || 0,
+    children: parseInt(document.getElementById('children').value) || 0,
+    elders: parseInt(document.getElementById('elders').value) || 0,
+    cityVehicles: getSelected('cityTags'),
+    localVehicles: getSelected('localTags'),
+    preferences: getSelected('prefTags')
+  };
+}
+
+function clearErrors(){
+  document.querySelectorAll('.form-group').forEach(g => g.classList.remove('error'));
+  document.querySelectorAll('.form-error-msg').forEach(e => e.textContent = '');
+}
+
+function showError(fieldId, msg){
+  const group = document.getElementById(fieldId);
+  if(!group) return;
+  group.classList.add('error');
+  const msgEl = group.querySelector('.form-error-msg');
+  if(msgEl) msgEl.textContent = msg;
+}
+
+function validateForm(data){
+  clearErrors();
+  let hasError = false;
+  if(!data.from){ showError('fg-from', '请选择或输入始发地'); hasError = true; }
+  if(!data.destination){ showError('fg-dest', '请选择或输入目的地'); hasError = true; }
+  if(data.from && data.destination && data.from === data.destination){
+    showError('fg-dest', '始发地和目的地不能相同');
+    hasError = true;
+  }
+  if(!data.budget || data.budget < 100){ showError('fg-budget', '预算至少100元'); hasError = true; }
+  if(!data.startDate || !data.endDate){ showError('fg-date', '请选择完整日期'); hasError = true; }
+  const diff = Math.ceil((new Date(data.endDate) - new Date(data.startDate)) / 86400000);
+  if(data.startDate && data.endDate && diff < 1){ showError('fg-date', '返程日期必须晚于出发日期'); hasError = true; }
+  if(data.adults + data.children + data.elders === 0){ showError('fg-people', '请至少添加1位出行人员'); hasError = true; }
+  return hasError ? 'error' : null;
+}
+
+// ============================================================
+// 前置追问系统
+// ============================================================
+let qzData = { answers: {} };
+let qzResolve = null;
+
+function buildQZQuestions(data){
+  const qs = [];
+  const dest = data.destination;
+  const fuzzyKeywords = ['农村', '乡下', '小镇', '海岛', '山区', '沙漠', '草原', '欧洲', '亚洲', '美洲', '非洲', '南美', '东南亚', '北欧', '南欧', '东欧'];
+  const isFuzzy = fuzzyKeywords.some(k => dest.includes(k)) && !ALL_CITIES.some(c => dest.includes(c));
+  if(isFuzzy){
+    qs.push({
+      id: 'dest_detail',
+      question: '你提到的"' + dest + '"具体是指哪个国家或地区？',
+      type: 'select',
+      options: ['法国', '意大利', '西班牙', '葡萄牙', '德国', '瑞士', '奥地利', '荷兰', '比利时', '希腊', '土耳其', '日本', '韩国', '泰国', '越南', '印尼', '其他（输入）'],
+      placeholder: '输入具体地名'
+    });
+  }
+  const diff = Math.ceil((new Date(data.endDate) - new Date(data.startDate)) / 86400000);
+  const perPersonPerDay = data.budget / (data.adults + data.children * 0.6 + data.elders * 0.8) / Math.max(1, diff);
+  if(perPersonPerDay < 300){
+    qs.push({
+      id: 'budget_style',
+      question: '预算相对紧凑，你更倾向？',
+      type: 'select',
+      options: ['优先省钱（经济型住宿和餐饮）', '优先舒适（可适当超预算）']
+    });
+  }
+  if(diff >= 7){
+    qs.push({
+      id: 'pace',
+      question: '天数较长，你希望？',
+      type: 'select',
+      options: ['深度慢游（少去几个地方，玩透）', '多城市打卡（多去几个地方）']
+    });
+  }
+  if(data.elders > 0 || data.children > 0){
+    qs.push({
+      id: 'family_pace',
+      question: '有老人/小孩同行，行程节奏？',
+      type: 'select',
+      options: ['宽松悠闲（每天1-2个点）', '正常节奏']
+    });
+  }
+  if(data.preferences.length === 0){
+    qs.push({
+      id: 'pref',
+      question: '你对什么最感兴趣？',
+      type: 'select',
+      options: ['美食', '拍照/风景', '历史文化', '购物', '自然/户外', '放松度假']
+    });
+  }
+  return qs.slice(0, 4);
+}
+
+function renderQZ(qs){
+  const body = document.getElementById('qzBody');
+  if(qs.length === 0){
+    body.innerHTML = '<p style="color:#5c5648;font-size:14px;text-align:center;padding:24px 0">✨ 信息已经很完整，直接生成方案吧！</p>';
+    document.getElementById('qzConfirmBtn').textContent = '✨ 直接生成';
+    return;
+  }
+  let html = '';
+  qs.forEach((q, idx) => {
+    html += `<div class="qz-item" data-idx="${idx}" style="animation-delay:${idx*0.08}s">
+      <div class="q">${q.question}</div>`;
+    if(q.type === 'select'){
+      html += `<div class="options" data-id="${q.id}">`;
+      q.options.forEach(opt => {
+        html += `<span class="qz-tag" data-val="${opt}">${opt}</span>`;
+      });
+      html += `</div>`;
+      if(q.placeholder){
+        html += `<input class="qz-input" placeholder="${q.placeholder}" data-id="${q.id}">`;
+      }
+    }
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+  body.querySelectorAll('.qz-tag').forEach(tag => {
+    tag.addEventListener('click', function(){
+      const parent = this.closest('.options');
+      parent.querySelectorAll('.qz-tag').forEach(t => t.classList.remove('selected'));
+      this.classList.add('selected');
+      const input = parent.parentElement.querySelector('.qz-input');
+      if(input) input.value = '';
+    });
+  });
+  body.querySelectorAll('.qz-input').forEach(inp => {
+    inp.addEventListener('input', function(){
+      const parent = this.closest('.qz-item');
+      parent.querySelectorAll('.qz-tag').forEach(t => t.classList.remove('selected'));
+    });
+  });
+  document.getElementById('qzConfirmBtn').textContent = '✨ 确认，开始生成';
+}
+
+function collectQZAnswers(){
+  const items = document.querySelectorAll('.qz-item');
+  const ans = {};
+  items.forEach(item => {
+    const sel = item.querySelector('.qz-tag.selected');
+    const inp = item.querySelector('.qz-input');
+    let val = '';
+    if(sel) val = sel.dataset.val;
+    else if(inp && inp.value.trim()) val = inp.value.trim();
+    if(val){
+      const id = item.querySelector('.options')?.dataset.id || item.querySelector('.qz-input')?.dataset.id || 'unknown';
+      ans[id] = val;
+    }
+  });
+  return ans;
+}
+
+function openQZ(data){
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('qzOverlay');
+    const qs = buildQZQuestions(data);
+    if(qs.length === 0){
+      resolve({});
+      return;
+    }
+    qzData = { answers: {}, resolved: false };
+    qzResolve = resolve;
+    renderQZ(qs);
+    overlay.classList.add('active');
+    document.getElementById('qzConfirmBtn').onclick = function(){
+      const ans = collectQZAnswers();
+      qzData.answers = ans;
+      qzData.resolved = true;
+      overlay.classList.remove('active');
+      resolve(ans);
+    };
+    window.skipQZ = function(){
+      qzData.resolved = true;
+      overlay.classList.remove('active');
+      resolve({});
+    };
+  });
+}
+window.confirmQZ = function(){ document.getElementById('qzConfirmBtn').click(); };
+window.skipQZ = function(){ document.getElementById('qzOverlay').classList.remove('active'); if(qzResolve) qzResolve({}); };
+
+// ============================================================
+// 主流程
+// ============================================================
+const API_URL = 'https://51ai-1.pages.dev/api/proxy';
+
 async function startPlan(){
-  // 获取用户输入
-  const rawFrom = document.getElementById('fromCity').value;
-  const rawTo = document.getElementById('toCity').value;
-  const budget = parseFloat(document.getElementById('budget').value);
-  const people = parseInt(document.getElementById('people').value);
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
-  const spots = document.getElementById('spots').value.trim();
+  const data = getFormData();
+  const err = validateForm(data);
+  if(err){ 
+    const firstErr = document.querySelector('.form-group.error');
+    if(firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return; 
+  }
 
-  // 使用 cleanInput 过滤
-  const fromCity = cleanInput(rawFrom);
-  const toCity = cleanInput(rawTo);
-
-  // 校验并提示
-  if(!fromCity){ alert('请输入有效的地名（出发地）'); return; }
-  if(!toCity){ alert('请输入有效的地名（目的地）'); return; }
-  if(fromCity === toCity){ alert('出发地和目的地不能相同'); return; }
-
-  // 其他校验
-  if(!budget || budget < 100){ alert('预算至少100元'); return; }
-  if(!startDate || !endDate){ alert('请选择日期'); return; }
-  if(!people || people < 1){ alert('人数至少1人'); return; }
-
-  const days = Math.ceil((new Date(endDate)-new Date(startDate))/86400000);
-  if(days < 1){ alert('日期范围不正确'); return; }
-
-  const prefs = [];
-  document.querySelectorAll('#prefTags .tag.active').forEach(c => prefs.push(c.dataset.val));
+  const qzAnswers = await openQZ(data);
+  const extra = qzAnswers;
 
   const btn = document.getElementById('planBtn');
   const loading = document.getElementById('loading');
   const result = document.getElementById('result');
-  
   btn.disabled = true;
   btn.textContent = '规划中……';
   result.classList.remove('active');
   loading.classList.add('active');
 
   try {
-    // ===== Prompt 架构 =====
-    const systemPrompt = `你是拥有10年以上经验的私人旅行顾问（Personal Travel Designer）。
-你的职责不是生成普通旅游攻略，而是像一位真正陪用户规划旅行的朋友，根据预算、时间、人数、兴趣、季节、交通条件，设计一套真实、舒适、可执行、值得回忆的旅行方案。
+    const diff = Math.ceil((new Date(data.endDate) - new Date(data.startDate)) / 86400000);
+    const peopleTotal = data.adults + data.children + data.elders;
+    const peopleDesc = `${data.adults}成人${data.children ? '、'+data.children+'小孩' : ''}${data.elders ? '、'+data.elders+'老人' : ''}`;
+
+    let systemPrompt = `你是拥有10年以上经验的私人旅行顾问。你的职责是像朋友一样帮用户规划旅行，根据预算、时间、人数、兴趣、季节、交通条件，设计一套真实、舒适、可执行、值得回忆的旅行方案。
+
+【重要：处理模糊目的地】
+如果用户输入的目的地较模糊（如"欧洲农村"、"日本乡下"等），你应根据预算、天数、偏好推荐3~5个具体国家/地区，并说明理由，然后选择最合适的进行详细规划。
 
 【规划原则】
-第一，真实。第二，可执行。第三，减少折返。第四，控制预算。第五，让用户玩得舒服，而不是玩得最多。
-如果无法确认某项信息（如具体营业时间、车次、餐厅是否营业），必须明确提醒用户自行确认，不允许编造任何事实。
-
-【思考规则】
-在输出之前，请先完成内部规划：
-① 用户真正的旅行目标是什么？（休闲/拍照/情侣/亲子/老人/美食/动漫/购物/毕业旅行/商务/深度文化）
-② 预算是否合理？如果预算明显不足，请主动调整方案，而不是硬塞景点。
-③ 行程是否合理？尽量按地理位置安排，减少来回折返，保证每天都有休息时间。
-④ 是否符合当地季节？自动考虑天气、日照、花期、节日、旅游旺季。
-⑤ 有没有容易踩坑？提前提醒。
+真实、可执行、减少折返、控制预算、让用户玩得舒服。
+如果无法确认某项信息（营业时间、车次、餐厅等），必须明确提醒用户自行确认，不允许编造任何事实。
 
 【输出要求】
 使用Markdown输出。不要输出任何解释、不要输出AI说明、不要输出"根据您的要求"。直接开始规划。
 
 【输出结构】
-
 # ✈️ 本次旅行概览
-一句话总结这趟旅行。
+一句话总结这趟旅行
 
 ## 🎯 本次旅行关键词
-列出3-5个关键词。
+3-5个关键词
 
-## 🚄 往返交通
-推荐2~3种方案。包含：方式、预计价格、预计时间、优缺点。如果不能确认车次，不要编造。
+## 🚄 城际交通（${data.from} → ${data.destination}）
+方式、耗时、参考价格、优缺点（不写具体车次/航班号）
+
+## 🚕 景点间交通
+每天景点之间的接驳建议
 
 ## 🏨 住宿建议
-推荐住宿区域、为什么推荐、适合什么人、预算范围。
+推荐区域 + 理由 + 适合人群 + 预算范围
 
 ## 📅 每日行程
-按天详细安排（Day1、Day2…）。每天包含：上午、下午、晚上的具体活动、交通方式、预计时间、门票、为什么这样安排。
+按天给（Day1、Day2…），每天上/下午/晚上核心活动、交通方式简述、为什么这样安排
 
 ## 🍜 美食推荐
-至少推荐6家真实存在的店铺。每家写：推荐理由、推荐菜、人均价格。如果无法确认真实性，明确建议用户再次确认。
-
-## 📸 最值得拍照的位置
-推荐3个。告诉用户什么时候拍最好、为什么。
+至少6家真实存在的店铺，每家：推荐菜 + 人均参考 + 为什么值得去
 
 ## 🌇 本地人才知道的小众推荐
-推荐2~5个，尽量不是游客打卡点。
+2-5个，避开游客打卡点
 
 ## 💰 预算规划
-Markdown表格：交通、住宿、门票、餐饮、购物、预留、总预算。最后告诉用户预算是否合理。
+表格：交通/住宿/餐饮/门票/购物/预留 → 总计，最后点评预算是否合理
 
-## 🎒 行李建议
-根据季节推荐，不要固定模板。
+## 🎒 必备物品清单
+Checklist 格式，按季节分类
 
 ## ⚠️ 容易踩坑的地方
-至少5条（门票预约、排队时间、闭馆时间、交通卡、现金、插座、网络、天气等）。
+至少5条
 
 ## ❤️ 我的旅行建议
-像一个真正旅行很多次的人说的话。控制在150字以内。语气自然、不鸡汤、不说教。
-
-【风格要求】
-语言自然，不要官方，不要像百度百科或旅行社广告。更像一位经验丰富的朋友。适当加入温度，但不要过度拟人。
-
-【幻觉约束】
-绝对不要编造餐厅、景点、营业时间、高铁车次、航班、价格。如果无法确认，明确告诉用户建议以官方信息为准。宁可提醒确认，也不虚构。
+150字以内，像真正旅行很多次的朋友说的话
 
 【基本信息】
-- 出发地：${fromCity}
-- 目的地：${toCity}
-- 天数：${days}天
-- 预算：${budget}元
-- 人数：${people}人
-- 日期：${startDate} 至 ${endDate}
-- 偏好：${prefs.join('、')||'无特殊偏好'}
-- 想去的景点：${spots||'由AI推荐'}`;
+- 出发地：${data.from}
+- 目的地：${data.destination}
+- 天数：${diff}天
+- 预算：${data.budget}元
+- 人数：${peopleTotal}人（${peopleDesc}）
+- 日期：${data.startDate} 至 ${data.endDate}
+- 城际交通偏好：${data.cityVehicles.join('、') || '不限'}
+- 景点间交通偏好：${data.localVehicles.join('、') || '不限'}
+- 旅行偏好：${data.preferences.join('、') || '无特殊偏好'}
+${extra.dest_detail ? '- 目的地具体化：' + extra.dest_detail : ''}
+${extra.budget_style ? '- 预算倾向：' + extra.budget_style : ''}
+${extra.pace ? '- 行程节奏：' + extra.pace : ''}
+${extra.family_pace ? '- 家庭节奏：' + extra.family_pace : ''}
+${extra.pref ? '- 主要兴趣：' + extra.pref : ''}`;
 
-    // ===== 使用流式接收（stream: true），但不实时渲染 =====
+    const userMessage = `请为从${data.from}到${data.destination}的${diff}天旅行生成完整方案。${extra.dest_detail ? '目的地具体为：' + extra.dest_detail : ''}`;
+
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -295,11 +1880,11 @@ Markdown表格：交通、住宿、门票、餐饮、购物、预留、总预算
         model: 'glm-4-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `请为从${fromCity}到${toCity}的${days}天旅行设计完整方案。` }
+          { role: 'user', content: userMessage }
         ],
         temperature: 0.7,
         max_tokens: 3000,
-        stream: true  // ← 改成 true
+        stream: true
       })
     });
 
@@ -311,67 +1896,115 @@ Markdown表格：交通、住宿、门票、餐饮、购物、预留、总预算
     let fullContent = '';
     let buffer = '';
 
-    // 流式读取，只拼接不渲染
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
-
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed === 'data: [DONE]') continue;
         if (!trimmed.startsWith('data: ')) continue;
-
         try {
           const json = JSON.parse(trimmed.slice(6));
           const delta = json.choices?.[0]?.delta?.content;
-          if (delta) {
-            fullContent += delta;
-            // 注意：这里不调用 marked.parse()
-          }
-        } catch (e) {
-          // 忽略解析错误
-        }
+          if (delta) fullContent += delta;
+        } catch(e) {}
       }
     }
 
-    // 检查最终内容
-    if (!fullContent) {
-      throw new Error('AI 返回内容为空');
-    }
+    if (!fullContent) throw new Error('AI 返回内容为空');
 
-    // ===== 全部接收完成后，一次性渲染 =====
     document.getElementById('resultContent').innerHTML = marked.parse(fullContent);
-    document.getElementById('resultMeta').textContent = `${fromCity} → ${toCity} · ${days}天 · ${people}人 · ¥${budget}`;
-    
+    document.getElementById('resultMeta').textContent = `${data.from} → ${data.destination} · ${diff}天 · ${peopleTotal}人 · ¥${data.budget}`;
+    window._lastPlan = fullContent;
+
     loading.classList.remove('active');
     result.classList.add('active');
-    result.scrollIntoView({ behavior: 'smooth' });
+
+    if (window.innerWidth >= 820) {
+      setTimeout(() => {
+        document.querySelector('.result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+    }
 
   } catch(e) {
     loading.classList.remove('active');
-    alert('规划失败：' + (e.message || '请重试'));
+    alert('生成失败：' + (e.message || '网络错误，请重试'));
   } finally {
     btn.disabled = false;
     btn.textContent = '✨ 重新规划';
   }
 }
 
+// ============================================================
+// 后置追问
+// ============================================================
+async function askFollowup(){
+  const input = document.getElementById('followupInput');
+  const btn = document.getElementById('followupBtn');
+  const answerDiv = document.getElementById('followupAnswer');
+  const question = input.value.trim();
+  if(!question) return;
+  if(!window._lastPlan){
+    answerDiv.textContent = '请先生成方案再追问';
+    answerDiv.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '思考中…';
+  answerDiv.style.display = 'block';
+  answerDiv.textContent = '⏳ AI 正在思考…';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'glm-4-flash',
+        messages: [
+          { role: 'system', content: '你是资深旅行顾问，用户对已有方案提出追问，请根据原有方案内容，直接回答用户的追问，给出具体、可执行的建议。如果用户要求修改方案，请只输出修改后的对应部分，不要重复全文。' },
+          { role: 'user', content: `原方案：\n${window._lastPlan}\n\n用户追问：${question}` }
+        ],
+        temperature: 0.6,
+        max_tokens: 800,
+        stream: false
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    const answer = data.choices[0].message.content;
+    answerDiv.innerHTML = '💬 ' + marked.parse(answer);
+    input.value = '';
+  } catch(e) {
+    answerDiv.textContent = '追问失败：' + (e.message || '请重试');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '追问';
+  }
+}
+document.getElementById('followupInput').addEventListener('keypress', function(e){
+  if(e.key === 'Enter') askFollowup();
+});
+
+// ============================================================
+// PDF 下载
+// ============================================================
 function downloadPDF(){
   const el = document.getElementById('resultContent');
-  const origBg = el.style.background;
+  const origBg = el.style.background, origColor = el.style.color;
   el.style.background = '#fff';
+  el.style.color = '#1a1a2e';
   html2pdf().set({
-    margin: [8, 8, 8, 8],
+    margin: [12, 12, 12, 12],
     filename: '旅行方案_' + new Date().toLocaleDateString() + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2 },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   }).from(el).save().then(() => {
     el.style.background = origBg;
+    el.style.color = origColor;
   });
 }
 </script>
