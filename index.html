@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>旅行规划师 · DeepSeek</title>
+  <title>旅行规划师 · 景点验证版</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
-    /* ===== 完整样式，与之前一致 ===== */
+    /* ===== 完整样式，与之前一致（略作调整以容纳新输入框） ===== */
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#0c0b09;min-height:100vh;display:flex;justify-content:center;padding:20px;color:#f5f0e8;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;line-height:1.6;overflow-x:hidden;position:relative}
     body::before{content:'';position:fixed;inset:0;z-index:-3;background:radial-gradient(ellipse 80% 60% at 20% 30%, rgba(251,191,36,0.06) 0%, transparent 60%),radial-gradient(ellipse 60% 50% at 80% 70%, rgba(245,240,232,0.04) 0%, transparent 55%),radial-gradient(ellipse 50% 40% at 50% 50%, rgba(251,146,60,0.03) 0%, transparent 50%);pointer-events:none}
@@ -193,6 +193,7 @@
   <div class="card">
     <div class="card-title">📋 填写旅行信息</div>
     <div class="form-grid">
+      <!-- 始发地 -->
       <div class="form-group" id="fg-from">
         <label>🏠 始发地</label>
         <div class="input-with-custom">
@@ -202,6 +203,7 @@
         </div>
         <div class="form-error-msg"></div>
       </div>
+      <!-- 目的地 -->
       <div class="form-group" id="fg-dest">
         <label>🌍 目的地</label>
         <div class="input-with-custom">
@@ -234,6 +236,13 @@
           <div class="pgroup"><label>👴 老人</label><input type="number" id="elders" value="0" min="0" max="10"></div>
         </div>
         <div class="form-error-msg"></div>
+      </div>
+      <!-- ===== 新增：景点自由输入 ===== -->
+      <div class="form-group full" id="fg-spots">
+        <label>📍 想去的景点（可选）</label>
+        <input type="text" id="spots" placeholder="如：故宫、长城、天坛（用逗号分隔）">
+        <div class="form-error-msg"></div>
+        <span style="color:#5c5648;font-size:11px;margin-top:2px">输入后将自动校验景点真实性</span>
       </div>
       <div class="form-group full">
         <label>🚄 城际交通</label>
@@ -277,8 +286,8 @@
   <!-- 加载 -->
   <div class="loading" id="loading">
     <div class="spinner-wrap"><div class="spinner"></div><div class="spinner-inner"></div><div class="spinner-core"></div></div>
-    <div class="loading-text">AI 正在为你设计旅行方案……</div>
-    <p class="loading-sub">后台处理中，切出也不影响</p>
+    <div class="loading-text">正在校验景点……</div>
+    <p class="loading-sub" id="loadingSub">请稍候</p>
   </div>
 
   <!-- 结果 -->
@@ -319,10 +328,11 @@
 
 <script>
 // ============================================================
-// 关键修改：API 配置 —— 切换为 DeepSeek
+// API 配置：智谱用于验证，DeepSeek用于生成
 // ============================================================
-const API_URL = 'https://51ai-1.pages.dev/api/proxy';   // 你的代理地址
-const MODEL_NAME = 'deepseek-chat';                    // 改为 DeepSeek 模型
+const API_URL = 'https://51ai-1.pages.dev/api/proxy';
+const MODEL_ZHIPU = 'glm-4-flash';        // 用于景点校验
+const MODEL_DEEPSEEK = 'deepseek-chat';   // 用于生成规划
 
 // ============================================================
 // 数据 & 工具（保持不变）
@@ -405,6 +415,7 @@ function getFormData(){
     adults: parseInt(document.getElementById('adults').value) || 0,
     children: parseInt(document.getElementById('children').value) || 0,
     elders: parseInt(document.getElementById('elders').value) || 0,
+    spots: document.getElementById('spots').value.trim(),
     cityVehicles: getSelected('cityTags'),
     localVehicles: getSelected('localTags'),
     preferences: getSelected('prefTags')
@@ -439,6 +450,63 @@ function validateForm(data){
   if(data.startDate && data.endDate && diff < 1){ showError('fg-date', '返程日期必须晚于出发日期'); hasError = true; }
   if(data.adults + data.children + data.elders === 0){ showError('fg-people', '请至少添加1位出行人员'); hasError = true; }
   return hasError ? 'error' : null;
+}
+
+// ============================================================
+// 新增：景点校验函数（调用智谱）
+// ============================================================
+async function validateSpots(spotsStr) {
+  // 按逗号分割，去除空格，过滤空字符串
+  const spots = spotsStr.split(/[,，、\s]+/).filter(s => s.length > 0);
+  if (spots.length === 0) return { valid: true, message: '' };
+
+  // 构造校验提示词
+  const prompt = `你是一个地理景点核实助手。请判断以下景点是否真实存在，并指出哪些不存在。
+
+景点列表：${spots.join('、')}
+
+请严格按照以下格式输出：
+- 存在的景点：列出所有确认存在的景点。
+- 不存在的景点：列出所有可能不存在或无法确认的景点，并简要说明原因（如“可能是名称错误”、“位于其他城市”等）。
+
+如果全部存在，只输出“全部存在”。
+如果全部不存在，只输出“全部不存在”。
+
+不要输出任何额外内容。`;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL_ZHIPU,
+        messages: [
+          { role: 'system', content: '你是一个严谨的景点核实助手，只根据已知知识判断，不要编造信息。' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 300,
+        stream: false
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const answer = data.choices[0].message.content.trim();
+
+    // 解析回答，判断是否存在无效景点
+    const invalidKeywords = ['不存在', '无法确认', '可能不是', '不在', '错误'];
+    const hasInvalid = invalidKeywords.some(k => answer.includes(k)) && !answer.includes('全部存在');
+
+    if (hasInvalid) {
+      return { valid: false, message: answer };
+    } else {
+      return { valid: true, message: '✅ 所有景点均确认有效' };
+    }
+  } catch (e) {
+    console.error('校验失败:', e);
+    // 如果校验失败，默认通过（避免阻塞用户）
+    return { valid: true, message: '⚠️ 校验服务暂不可用，已跳过景点验证' };
+  }
 }
 
 // ============================================================
@@ -587,7 +655,7 @@ window.confirmQZ = function(){ document.getElementById('qzConfirmBtn').click(); 
 window.skipQZ = function(){ document.getElementById('qzOverlay').classList.remove('active'); if(qzResolve) qzResolve({}); };
 
 // ============================================================
-// 主流程 —— 使用 DeepSeek 模型
+// 主流程 —— 先校验景点，再用 DeepSeek 生成
 // ============================================================
 async function startPlan(){
   const data = getFormData();
@@ -598,23 +666,54 @@ async function startPlan(){
     return; 
   }
 
+  // 景点校验步骤
+  const spotsStr = data.spots;
+  const loading = document.getElementById('loading');
+  const loadingSub = document.getElementById('loadingSub');
+  loading.classList.add('active');
+  loadingSub.textContent = '正在校验景点……';
+
+  let validationPassed = true;
+  if (spotsStr) {
+    try {
+      const result = await validateSpots(spotsStr);
+      if (!result.valid) {
+        validationPassed = false;
+        alert('❌ 景点校验未通过：\n\n' + result.message + '\n\n请修改后重试。');
+        loading.classList.remove('active');
+        return;
+      } else {
+        loadingSub.textContent = '✅ 景点校验通过，正在生成方案……';
+        // 短暂显示成功信息
+        await new Promise(r => setTimeout(r, 600));
+      }
+    } catch (e) {
+      loading.classList.remove('active');
+      alert('校验服务异常，请稍后重试。');
+      return;
+    }
+  } else {
+    loadingSub.textContent = '未输入景点，跳过校验，正在生成方案……';
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // 继续前置追问
   const qzAnswers = await openQZ(data);
   const extra = qzAnswers;
 
   const btn = document.getElementById('planBtn');
-  const loading = document.getElementById('loading');
   const result = document.getElementById('result');
   btn.disabled = true;
   btn.textContent = '规划中……';
   result.classList.remove('active');
-  loading.classList.add('active');
 
   try {
     const diff = Math.ceil((new Date(data.endDate) - new Date(data.startDate)) / 86400000);
     const peopleTotal = data.adults + data.children + data.elders;
     const peopleDesc = `${data.adults}成人${data.children ? '、'+data.children+'小孩' : ''}${data.elders ? '、'+data.elders+'老人' : ''}`;
 
-    // ===== 系统提示（与之前一致，可自由调整） =====
+    // 构建系统提示（包含景点信息）
+    const spotsList = spotsStr ? '，想去的景点：' + spotsStr : '';
     const systemPrompt = `你是拥有10年以上经验的私人旅行顾问。你的职责是像朋友一样帮用户规划旅行，根据预算、时间、人数、兴趣、季节、交通条件，设计一套真实、舒适、可执行、值得回忆的旅行方案。
 
 【重要：处理模糊目的地】
@@ -678,18 +777,17 @@ ${extra.dest_detail ? '- 目的地具体化：' + extra.dest_detail : ''}
 ${extra.budget_style ? '- 预算倾向：' + extra.budget_style : ''}
 ${extra.pace ? '- 行程节奏：' + extra.pace : ''}
 ${extra.family_pace ? '- 家庭节奏：' + extra.family_pace : ''}
-${extra.pref ? '- 主要兴趣：' + extra.pref : ''}`;
+${extra.pref ? '- 主要兴趣：' + extra.pref : ''}
+${spotsList ? '- 想去的景点：' + spotsList : ''}`;
 
-    const userMessage = `请为从${data.from}到${data.destination}的${diff}天旅行生成完整方案。${extra.dest_detail ? '目的地具体为：' + extra.dest_detail : ''}`;
+    const userMessage = `请为从${data.from}到${data.destination}的${diff}天旅行生成完整方案。${extra.dest_detail ? '目的地具体为：' + extra.dest_detail : ''}${spotsList ? '。用户想去的景点：' + spotsStr : ''}`;
 
-    // ============================================================
-    // 调用 DeepSeek API（流式）
-    // ============================================================
+    // 调用 DeepSeek 生成
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL_NAME,               // 关键：使用 DeepSeek
+        model: MODEL_DEEPSEEK,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
@@ -751,7 +849,7 @@ ${extra.pref ? '- 主要兴趣：' + extra.pref : ''}`;
 }
 
 // ============================================================
-// 后置追问
+// 后置追问（不变）
 // ============================================================
 async function askFollowup(){
   const input = document.getElementById('followupInput');
@@ -774,7 +872,7 @@ async function askFollowup(){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL_NAME,
+        model: MODEL_DEEPSEEK,
         messages: [
           { role: 'system', content: '你是资深旅行顾问，用户对已有方案提出追问，请根据原有方案内容，直接回答用户的追问，给出具体、可执行的建议。如果用户要求修改方案，请只输出修改后的对应部分，不要重复全文。' },
           { role: 'user', content: `原方案：\n${window._lastPlan}\n\n用户追问：${question}` }
@@ -801,7 +899,7 @@ document.getElementById('followupInput').addEventListener('keypress', function(e
 });
 
 // ============================================================
-// PDF 下载
+// PDF 下载（不变）
 // ============================================================
 function downloadPDF(){
   const el = document.getElementById('resultContent');
